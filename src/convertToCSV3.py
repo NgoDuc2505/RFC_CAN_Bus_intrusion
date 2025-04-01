@@ -3,6 +3,11 @@ import numpy as np
 from collections import Counter
 import glob
 
+path1 = "su2017"
+path2 = "2011-chevrolet-impala"
+path3 = "2011-chevrolet-traverse"
+path4 = "2016-chevrolet-silverado"
+
 def calculate_entropy(hex_data):
     if(type(hex_data) == float):
         return 0
@@ -77,41 +82,84 @@ def process_and_merge_csv_with_mode(input_files, output_file, mode="single", lab
     else:
         print(f"Tất cả dữ liệu đã được gộp vào: {output_file}, bao gồm: {samples_count} mẫu")    
 
+crtPath = path1
+
 fs = {
-    "free_atk_path": "src/su2017/attack-free/*.csv",
-    "dos_atk_path": "src/su2017/DoS-attacks/*.csv",
-    "fuzzy_atk_path": "src/su2017/fuzzing-attacks/*.csv",
-    "gear_atk_path": "src/su2017/gear-attacks/*.csv",
-    "speed_atk_path": "src/su2017/speed-attacks/*.csv",
-    "interval_atk_path": "src/su2017/interval-attacks/*.csv",
-    "combined_atk_path": "src/su2017/combined-attacks/*.csv",
-    "rpm_atk_path": "src/su2017/rpm-attacks/*.csv",
-    "standstill_atk_path": "src/su2017/standstill-attacks/*.csv",
-    "synsematic_atk_path": "src/su2017/systematic-attacks/*.csv",
-    "output": "src/datasets_release/can_data_v7_2.csv"
+    "free_atk_path": f"src/{crtPath}/attack-free/*.csv",
+    "dos_atk_path": f"src/{crtPath}/DoS-attacks/*.csv",
+    "fuzzy_atk_path": f"src/{crtPath}/fuzzing-attacks/*.csv",
+    "gear_atk_path": f"src/{crtPath}/gear-attacks/*.csv",
+    "speed_atk_path": f"src/{crtPath}/speed-attacks/*.csv",
+    "interval_atk_path": f"src/{crtPath}/interval-attacks/*.csv",
+    "combined_atk_path": f"src/{crtPath}/combined-attacks/*.csv",
+    "rpm_atk_path": f"src/{crtPath}/rpm-attacks/*.csv",
+    "standstill_atk_path": f"src/{crtPath}/standstill-attacks/*.csv",
+    "synsematic_atk_path": f"src/{crtPath}/systematic-attacks/*.csv",
+    "output": "src/datasets_release/can_data_v7_3.csv"
 }
 
-input_files_atk_free = glob.glob(fs["free_atk_path"])  
-input_files_dos = glob.glob(fs["dos_atk_path"])  
-input_files_fuz = glob.glob(fs["fuzzy_atk_path"])  
-input_files_gear = glob.glob(fs["gear_atk_path"])
-input_files_speed = glob.glob(fs["speed_atk_path"]) 
-input_files_interval = glob.glob(fs["interval_atk_path"])
-input_files_combined = glob.glob(fs["combined_atk_path"])
-input_files_rpm = glob.glob(fs["rpm_atk_path"])
-input_files_standstill = glob.glob(fs["standstill_atk_path"])
-input_files_synsematic = glob.glob(fs["synsematic_atk_path"])  
+input_files_atk_free = fs["free_atk_path"]  
+input_files_dos = fs["dos_atk_path"]  
+input_files_fuz = fs["fuzzy_atk_path"]  
+input_files_gear = fs["gear_atk_path"]
+input_files_speed = fs["speed_atk_path"] 
+input_files_interval = fs["interval_atk_path"]
+input_files_combined = fs["combined_atk_path"]
+input_files_rpm = fs["rpm_atk_path"]
+input_files_standstill = fs["standstill_atk_path"]
+input_files_synsematic = fs["synsematic_atk_path"]  
 output_file = fs["output"]
 
 
 
-# process_and_merge_csv(input_files_atk_free, output_file, 0)
-# process_and_merge_csv_with_mode(input_files_dos, output_file, mode='single', label=1)
-# process_and_merge_csv_with_mode(input_files_fuz, output_file, mode='single', label=1)
-# process_and_merge_csv_with_mode(input_files_gear, output_file, mode='single', label=1)
-# process_and_merge_csv_with_mode(input_files_speed, output_file, mode='single', label=1)
-# process_and_merge_csv_with_mode(input_files_interval, output_file, mode='single', label=1)
-# process_and_merge_csv_with_mode(input_files_combined, output_file, mode='single', label=1)
-# process_and_merge_csv_with_mode(input_files_rpm, output_file, mode='single', label=1)
-# process_and_merge_csv_with_mode(input_files_standstill, output_file, mode='single', label=1)
-# process_and_merge_csv_with_mode(input_files_synsematic, output_file, mode='single', label=1)
+process_and_merge_csv(input_files_atk_free, output_file, 0)
+process_and_merge_csv_with_mode(input_files_dos, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_fuz, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_gear, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_speed, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_interval, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_combined, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_rpm, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_standstill, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_synsematic, output_file, mode='single', label=1)
+
+crtPath = path2
+
+fs = {
+    "free_atk_path": f"src/{crtPath}/attack-free/*.csv",
+    "dos_atk_path": f"src/{crtPath}/DoS-attacks/*.csv",
+    "fuzzy_atk_path": f"src/{crtPath}/fuzzing-attacks/*.csv",
+    "gear_atk_path": f"src/{crtPath}/gear-attacks/*.csv",
+    "speed_atk_path": f"src/{crtPath}/speed-attacks/*.csv",
+    "interval_atk_path": f"src/{crtPath}/interval-attacks/*.csv",
+    "combined_atk_path": f"src/{crtPath}/combined-attacks/*.csv",
+    "rpm_atk_path": f"src/{crtPath}/rpm-attacks/*.csv",
+    "standstill_atk_path": f"src/{crtPath}/standstill-attacks/*.csv",
+    "synsematic_atk_path": f"src/{crtPath}/systematic-attacks/*.csv",
+    "output": "src/datasets_release/can_data_v7_3.csv"
+}
+
+input_files_atk_free = fs["free_atk_path"]  
+input_files_dos = fs["dos_atk_path"]  
+input_files_fuz = fs["fuzzy_atk_path"]  
+input_files_gear = fs["gear_atk_path"]
+input_files_speed = fs["speed_atk_path"] 
+input_files_interval = fs["interval_atk_path"]
+input_files_combined = fs["combined_atk_path"]
+input_files_rpm = fs["rpm_atk_path"]
+input_files_standstill = fs["standstill_atk_path"]
+input_files_synsematic = fs["synsematic_atk_path"]  
+output_file = fs["output"]
+
+
+
+process_and_merge_csv(input_files_atk_free, output_file, 0)
+process_and_merge_csv_with_mode(input_files_dos, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_fuz, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_gear, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_speed, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_interval, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_combined, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_rpm, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_standstill, output_file, mode='single', label=1)
+process_and_merge_csv_with_mode(input_files_synsematic, output_file, mode='single', label=1)
