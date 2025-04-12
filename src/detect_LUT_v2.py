@@ -5,45 +5,48 @@ import joblib
 def load_model(model_path):
     return joblib.load(model_path)
 
+
 def predict(model, input_data):
     df = pd.DataFrame([input_data])
     prediction = model.predict(df)
     probability = model.predict_proba(df)
     return prediction[0], probability[0]
 
-def load_forest_from_hex(file_path):
+
+def load_forest_from_multiple_hex(hex_files):
     forest = {}
     node_counters = {}  # Đếm số node cho mỗi tree
-    
-    with open(file_path, 'r') as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-                
-            # Phân tích dòng hex
-            tree = line[:2]
-            feature = line[2:4]
-            threshold = line[4:12]
-            left_child = line[12:14]
-            right_child = line[14:16]
-            prediction = line[16:18]
-            
-            if tree not in forest:
-                forest[tree] = {}
-                node_counters[tree] = 0
-                
-            node_id = f"{node_counters[tree]:02X}"
-            node_counters[tree] += 1
-            
-            forest[tree][node_id] = {
-                'feature': feature,
-                'threshold': threshold,
-                'left': left_child,
-                'right': right_child,
-                'prediction': prediction
-            }
-    
+
+    for file_path in hex_files:
+        with open(file_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+
+                # Phân tích dòng hex
+                tree = line[:2]
+                feature = line[2:4]
+                threshold = line[4:12]
+                left_child = line[12:14]
+                right_child = line[14:16]
+                prediction = line[16:18]
+
+                if tree not in forest:
+                    forest[tree] = {}
+                    node_counters[tree] = 0
+
+                node_id = f"{node_counters[tree]:02X}"
+                node_counters[tree] += 1
+
+                forest[tree][node_id] = {
+                    'feature': feature,
+                    'threshold': threshold,
+                    'left': left_child,
+                    'right': right_child,
+                    'prediction': prediction
+                }
+
     return forest
 
 
@@ -89,7 +92,6 @@ def predict_tree(tree, input_dict):
             current_node = node['right']
 
 
-
 def predict_forest(forest, input_dict):
     vote_counts = {}
 
@@ -111,26 +113,16 @@ def predict_forest(forest, input_dict):
     return final_pred
 
 
-
 if __name__ == "__main__":
-    file_path = 'src/LUT/LUTModel_hex.hex'  
+    # Danh sách 3 file hex
+    hex_files = [
+        'src/LUT/split_model_v4_00.hex',
+        'src/LUT/split_model_v4_01.hex',
+        'src/LUT/split_model_v4_10.hex'
+    ]
 
     model_path = "src/datasets_release/random_forest_model_v4_lite.pkl"
     model = load_model(model_path)
-
-    sample_input = {
-        'arbitration_id': 342,
-        'inter_arrival_time': 0.0,
-        'data_entropy': 1.061,
-        'dls': 8,
-    }
-
-    sample_input_2 = {
-        'arbitration_id': 977,
-        'inter_arrival_time': 0.02,
-        'data_entropy': 1.549,
-        'dls': 8,
-    }
 
     sample_input_3 = {
         'arbitration_id': 1838,            
@@ -139,14 +131,20 @@ if __name__ == "__main__":
         'dls': 1                          
     }
 
-    forest = load_forest_from_hex(file_path)
+    # Tải forest từ nhiều file .hex
+    forest = load_forest_from_multiple_hex(hex_files)
+    
+    # Dự đoán bằng voting
     prediction = predict_forest(forest, sample_input_3)
+    
+    # Dự đoán bằng mô hình joblib
     pred, prob = predict(model, sample_input_3)
-    print(f"Prediction: {pred} (0: Normal, 1: Attack)")
+    print(f"Prediction (sklearn): {pred} (0: Normal, 1: Attack)")
     print(f"Probability: {prob}")
+    
     if prediction == 1:
-        print("Dự đoán: Tấn công")
+        print("Voting prediction: Tấn công")
     elif prediction == 0:
-        print("Dự đoán: Bình thường")
+        print("Voting prediction: Bình thường")
     else:
         print("Không xác định nhãn.")
