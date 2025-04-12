@@ -1,6 +1,6 @@
 import os
 
-file_path = "RFC_CAN_Bus_intrusion/src/random_forest_model_v7_2.pkl"
+file_path = "src/LUT/split_model_v4_00.csv"
 
 if os.path.exists(file_path):
     print("✅ Tệp tồn tại.")
