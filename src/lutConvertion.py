@@ -84,13 +84,11 @@ def convert_pkl_to_csv(pkl_path, csv_path, feature_names, mode="mem"):
     # Lưu vào .csv
     df.to_csv(csv_path, index=False)
     print(f"Đã lưu file .csv vào {csv_path}")
-
-
 if __name__ == "__main__":
     feature_names =         ["A_ID", "T_A", "D_E", "DLS"]
     feature_names_mapping = ["00", "01", "10", "11"]
-    pkl_file = "random_forest_model_v4_optimized.pkl"  
-    csv_file = "random_forest_model_v4_optimized_LUT_mem.csv"      
+    pkl_file = "src/datasets_release/random_forest_model_v4_lite.pkl"  
+    csv_file = "src/random_forest_model_v4_optimized_LUT_mem.csv"      
     
     
     convert_pkl_to_csv(pkl_file, csv_file, feature_names_mapping, mode="mem")
