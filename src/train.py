@@ -17,13 +17,12 @@ def train():
                                    min_samples_split=2,
                                   #  max_depth= 10,
                                    max_depth= 8,
-                                   max_leaf_nodes=30,
                                    random_state=42,
                                    criterion='gini',
                                     n_jobs=-1)
     model.fit(X_train, y_train)
 
-    joblib.dump(model, "src/datasets_release/random_forest_model_v4_lite.pkl")
+    joblib.dump(model, "src/datasets_release/random_forest_model.pkl")
     print("Model trained and saved as random_forest_model.pkl")
 
     predictions = model.predict(X_test)

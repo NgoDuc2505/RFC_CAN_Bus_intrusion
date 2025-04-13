@@ -3,7 +3,7 @@ import joblib
 import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
 
-model_loaded = joblib.load("random_forest_model_v4_optimized.pkl")
+model_loaded = joblib.load("src/datasets_release/random_forest_model.pkl")
 print(type(model_loaded))
 num_trees = len(model_loaded.estimators_)
 print(f"Số lượng cây trong Random Forest: {num_trees}")

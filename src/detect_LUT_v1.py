@@ -42,7 +42,7 @@ def predict_from_tree(tree_df, input_data, verbose=False):
         feature_value = input_data[feature_name]
 
         if verbose:
-            print(f"🧠 Node {node}: {feature_name} ({feature_value:.4f}) "
+            print(f"🧠 Node {node}: {feature_name} ({feature_value:.5f}) "
                   f"{'<= ' if feature_value <= threshold else '>  '} {threshold}")
 
         if feature_value <= threshold:
@@ -68,18 +68,17 @@ def vote_predictions(trees, input_data, verbose=False):
 # Main chạy như bạn yêu cầu
 if __name__ == "__main__":
     # Các cây mà bạn muốn dự đoán (tree_0 đến tree_16)
-    trees = [f"src/LUT/tree_{i}.csv" for i in range(17)]
+    trees = [f"src/LUT/tree_{i}.csv" for i in range(49)]
 
     # Dữ liệu đầu vào
-    sample_input_2 = {
-        'arbitration_id': 977,
-        'inter_arrival_time': 0.01,
+    sample_input = {
+      'arbitration_id': 977,
+        'inter_arrival_time': 0.02,
         'data_entropy': 1.549,
         'dls': 8,
     }
-
     # Thực hiện voting và lấy kết quả
-    voted_prediction, prediction_counts = vote_predictions(trees, sample_input_2, verbose=True)
+    voted_prediction, prediction_counts = vote_predictions(trees, sample_input, verbose=True)
     
     # Hiển thị kết quả
     print(f"\n🧾 Final Voted Prediction: {voted_prediction} (0: Normal, 1: Attack)")
