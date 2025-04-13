@@ -2,12 +2,12 @@ import csv
 
 # Danh sách file đầu vào
 input_files = [
-    'src/LUT/split_model_v4_00.csv',
-    'src/LUT/split_model_v4_01.csv',
-    'src/LUT/split_model_v4_10.csv'
+    'split_model_v4_v2/split_model_v4_v2_00.csv',
+    'split_model_v4_v2/split_model_v4_v2_01.csv',
+    'split_model_v4_v2/split_model_v4_v2_10.csv'
 ]
 
-output_file = 'src/LUT/LUTModel_hex.hex'
+output_file = 'split_model_v4_v2/LUTModel_hex.hex'
 offset = 0
 all_lines = []
 
@@ -18,7 +18,7 @@ for file in input_files:
         for row in reader:
             tree        = row['Tree'].upper().rjust(2, '0')  # Thêm dòng này để lấy giá trị Tree
             feature     = format(int(row['Feature'], 16), '02X')
-            threshold   = format(int(row['Threshold'], 16), '08X')
+            threshold   = format(int(row['Threshold'], 16), '04X')
             left_child  = format(int(row['Left_Child'], 16) + offset, '02X') if row['Left_Child'] != 'FF' else 'FF'
             right_child = format(int(row['Right_Child'], 16) + offset, '02X') if row['Right_Child'] != 'FF' else 'FF'
             prediction  = row['Prediction'].upper().rjust(2, '0')

@@ -13,7 +13,7 @@ def predict(model, input_data):
 
 def load_forest_from_hex(file_path):
     forest = {}
-    node_counters = {}  # Đếm số node cho mỗi tree
+    node_counters = {}  
     
     with open(file_path, 'r') as f:
         for line in f:
@@ -21,7 +21,7 @@ def load_forest_from_hex(file_path):
             if not line:
                 continue
                 
-            # Phân tích dòng hex
+            
             tree = line[:2]
             feature = line[2:4]
             threshold = line[4:12]
@@ -95,6 +95,7 @@ def predict_forest(forest, input_dict):
 
     for tree_id, tree in forest.items():
         pred = predict_tree(tree, input_dict)
+        print(f"Tree {tree_id}: Prediction: {pred}")
         if pred is not None:
             if pred not in vote_counts:
                 vote_counts[pred] = 1
@@ -113,9 +114,9 @@ def predict_forest(forest, input_dict):
 
 
 if __name__ == "__main__":
-    file_path = 'src/LUT/LUTModel_hex.hex'  
+    file_path = 'split_model_v4_v2\LUTModel_hex.hex'  
 
-    model_path = "src/datasets_release/random_forest_model_v4_lite.pkl"
+    model_path = "random_forest_model_v4_lite_17ts.pkl"
     model = load_model(model_path)
 
     sample_input = {
