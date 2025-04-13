@@ -1,86 +1,180 @@
-import pickle
-import pandas as pd
-import numpy as np
-from sklearn.tree import _tree
-import joblib
 import os
-from collections import defaultdict
+import struct
+import pandas as pd
+from collections import Counter
 
+# ====================== CẤU HÌNH ======================
+FEATURE_MAPPING = {
+    0: 'arbitration_id',
+    1: 'inter_arrival_time',
+    10: 'data_entropy',
+    11: 'dls',
+    -1: 'none'
+}
 
-def extract_tree_info(tree, tree_id, feature_names, mode="mem"):
-    tree_ = tree.tree_
-    feature_name = [
-        feature_names[i] if i != _tree.TREE_UNDEFINED else "N/A"
-        for i in tree_.feature
-    ]
-    nodes = []
+BIN_DIR = "src/LUT"
+NUM_TREES = 49
+# =======================================================
 
-    for node_id in range(tree_.node_count):
-        node_info = {
-            "Tree": tree_id,
-            "Node": node_id,
-            "Feature": feature_name[node_id],
-            "Threshold": tree_.threshold[node_id],
-            "Left_Child": tree_.children_left[node_id],
-            "Right_Child": tree_.children_right[node_id],
-            "Prediction": np.nan
-        }
+# ================== CHUYỂN ĐỔI CSV -> BIN ==============
+def convert_csv_to_bin(csv_path, bin_path):
+    """Chuyển đổi file CSV cây quyết định sang binary format"""
+    df = pd.read_csv(csv_path)
+    df.columns = df.columns.str.strip()
 
-        if node_info["Feature"] == "N/A":
-            node_info["Threshold"] = np.nan
-            node_info["Left_Child"] = np.nan
-            node_info["Right_Child"] = np.nan
-            node_info["Prediction"] = np.argmax(tree_.value[node_id])
+    with open(bin_path, 'wb') as f:
+        for _, row in df.iterrows():
+            # Xử lý các giá trị
+            node = int(row['Node'])
+            feature = int(float(row['Feature'])) if not pd.isna(row['Feature']) else -1
+            
+            # Xử lý threshold
+            threshold = float(row['Threshold']) if not pd.isna(row['Threshold']) else 0.0
+            
+            # Xử lý node con
+            left = int(float(row['Left_Child'])) if not pd.isna(row['Left_Child']) else 0
+            right = int(float(row['Right_Child'])) if not pd.isna(row['Right_Child']) else 0
+            
+            # Xử lý prediction (QUAN TRỌNG)
+            pred_raw = str(row['Prediction']).strip()
+            try:
+                prediction = int(float(pred_raw))  # Chuyển về số nguyên
+                if prediction == -1:
+                    pass  # Nút trong
+                elif prediction in (0, 1):
+                    pass  # Nút lá
+                else:
+                    raise ValueError(f"Giá trị prediction không hợp lệ: {pred_raw}")
+            except ValueError:
+                if pred_raw.upper() == 'FF':
+                    prediction = -1  # Coi 'FF' như -1
+                else:
+                    raise ValueError(f"Giá trị prediction không hợp lệ: {pred_raw}")
+
+            # Đóng gói dữ liệu (12 bytes/node)
+            packed = struct.pack(
+                '<HifHHb',  # Format: uint16, int32, float32, uint16, uint16
+                node,
+                feature,
+                threshold,
+                left,
+                right,
+                prediction
+            )
+            # Thêm prediction (1 byte) và padding (3 bytes)
+            packed += bytes(1) 
+            f.write(packed)
+    
+    print(f"✅ Đã chuyển đổi {csv_path} -> {bin_path}")
+
+def convert_all_csv_to_bin():
+    """Chuyển đổi tất cả các file CSV trong thư mục"""
+    for i in range(NUM_TREES):
+        csv_path = os.path.join(BIN_DIR, f"tree_{i}.csv")
+        bin_path = os.path.join(BIN_DIR, f"tree_{i}.bin")
+        if os.path.exists(csv_path):
+            convert_csv_to_bin(csv_path, bin_path)
         else:
-            node_info["Prediction"] = np.nan
+            print(f"⚠️ File {csv_path} không tồn tại")
+# =======================================================
 
-        if mode == "mem":
-            node_info = convertNodeToMemFile(node_info)
+# ================ ĐỌC VÀ DỰ ĐOÁN TỪ BIN ================
+def load_bin_tree(bin_path):
+    """Đọc cây nhị phân từ file với khung dữ liệu cố định 16 bytes/node"""
+    nodes = {}
+    with open(bin_path, 'rb') as f:
+        while True:
+            data = f.read(16)
+            if not data or len(data) < 16:
+                break
 
-        nodes.append(node_info)
-
+            # Giải mã 16 byte theo đúng định dạng
+            node_id, feature, threshold, left, right, prediction = struct.unpack('<HifHHb', data[:15])
+            
+            nodes[node_id] = {
+                'feature': feature,
+                'threshold': threshold,
+                'left': left,
+                'right': right,
+                'prediction': prediction
+            }
     return nodes
 
+def predict_from_bin_tree(tree_nodes, input_data, verbose=False):
+    """Dự đoán từ một cây binary"""
+    current_node = 0  # Bắt đầu từ node gốc
+    
+    while True:
+        node = tree_nodes.get(current_node)
+        if not node:
+            if verbose:
+                print(f"❌ Node {current_node} không tồn tại")
+            return None
+        
+        # Nếu là nút lá (prediction khác -1)
+        if node['prediction'] != -1:
+            if verbose:
+                print(f"✅ Node {current_node}: Prediction = {node['prediction']}")
+            return node['prediction']
+        
+        # Lấy tên feature
+        feature_name = FEATURE_MAPPING.get(node['feature'], 'unknown')
+        feature_value = input_data.get(feature_name, float('nan'))
+        
+        if verbose:
+            comp = "<=" if feature_value <= node['threshold'] else "> "
+            print(f"🧠 Node {current_node}: {feature_name} ({feature_value:.5f}) {comp} {node['threshold']:.5f}")
+        
+        # Di chuyển đến node con
+        current_node = node['left'] if feature_value <= node['threshold'] else node['right']
 
-def convertNodeToMemFile(node_info: dict[str, any]) -> dict[str, any]:
-    node_info["Tree"] = str(int(node_info['Tree']))
-    node_info["Node"] = str(int(node_info['Node']))
-    if node_info["Feature"] != "N/A":
-        # Giữ nguyên giá trị threshold với 3 chữ số thập phân
-        node_info["Threshold"] = f"{float(node_info['Threshold']):.3f}"
-        node_info["Left_Child"] = str(int(node_info['Left_Child']))
-        node_info["Right_Child"] = str(int(node_info['Right_Child']))
-        node_info["Prediction"] = "FF"  # Giữ nguyên "FF" thành "255"
-    else:
-        node_info["Threshold"] = "0"
-        node_info["Left_Child"] = "0"
-        node_info["Right_Child"] = "0"
-        node_info["Prediction"] = str(int(node_info['Prediction']))
-        node_info["Feature"] = "-1"
-    return node_info
+def vote_predictions_bin(bin_trees, input_data, verbose=False):
+    """Dự đoán bằng voting từ nhiều cây binary"""
+    predictions = []
+    
+    for tree_path in bin_trees:
+        if verbose:
+            print(f"\n=> Đang xử lý {os.path.basename(tree_path)}")
+            
+        tree_nodes = load_bin_tree(tree_path)
+        pred = predict_from_bin_tree(tree_nodes, input_data, verbose)
+        
+        if pred is not None:
+            predictions.append(pred)
+        elif verbose:
+            print("⚠️ Bỏ qua cây do lỗi dự đoán")
+    
+    if not predictions:
+        return None, Counter()
+    
+    # Thực hiện voting
+    prediction_counts = Counter(predictions)
+    voted_prediction = prediction_counts.most_common(1)[0][0]
+    
+    return voted_prediction, prediction_counts
+# =======================================================
 
-
-def convert_and_save_each_tree_as_csv(pkl_path, output_folder, feature_names, mode="mem"):
-    os.makedirs(output_folder, exist_ok=True)
-
-    with open(pkl_path, 'rb') as file:
-        model = joblib.load(file)
-
-    # Process each tree individually and save as separate CSV files
-    for tree_id, estimator in enumerate(model.estimators_):
-        nodes = extract_tree_info(estimator, tree_id, feature_names, mode)
-        df = pd.DataFrame(nodes)
-        df = df[["Tree", "Node", "Feature", "Threshold", "Left_Child", "Right_Child", "Prediction"]]
-        filename = f"tree_{tree_id}.csv"
-        out_path = os.path.join(output_folder, filename)
-        df.to_csv(out_path, index=False)
-        print(f"✅ Đã lưu cây thứ {tree_id} vào {out_path}")
-
-
+# ====================== MAIN ===========================
 if __name__ == "__main__":
-    feature_names = ["A_ID", "T_A", "D_E", "DLS"]
-    feature_names_mapping = ["00", "01", "10", "11"]
-    pkl_file = "random_forest_model_v5_lite.pkl"
-    output_folder = "src/LUT/"
-
-    convert_and_save_each_tree_as_csv(pkl_file, output_folder, feature_names_mapping, mode="mem")
+    # Bước 1: Chuyển đổi tất cả CSV sang BIN (nếu cần)
+    convert_all_csv_to_bin()
+    
+    # Bước 2: Chuẩn bị dữ liệu đầu vào
+    sample_input = {
+        'arbitration_id': 977,
+        'inter_arrival_time': 0.02,
+        'data_entropy': 1.549,
+        'dls': 8,
+    }
+    
+    # Bước 3: Tạo danh sách các file .bin
+    bin_trees = [os.path.join(BIN_DIR, f"tree_{i}.bin") for i in range(NUM_TREES)]
+    
+    # Bước 4: Thực hiện dự đoán
+    voted_pred, counts = vote_predictions_bin(bin_trees, sample_input, verbose=True)
+    
+    # Bước 5: Hiển thị kết quả
+    print("\n" + "="*50)
+    print(f"🧾 Kết quả dự đoán cuối cùng: {voted_pred} (0: Bình thường, 1: Tấn công)")
+    print(f"📊 Thống kê vote: {dict(counts)}")
+    print("="*50)
