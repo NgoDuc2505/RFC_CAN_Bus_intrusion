@@ -44,7 +44,8 @@ def convertNodeToMemFile(node_info: dict[str, any]) -> dict[str, any]:
     node_info["Tree"] = f"{int(node_info["Tree"]):02x}"
     node_info["Node"] = f"{int(node_info["Node"]):02x}"
     if(node_info["Feature"] != "N/A"):
-        node_info["Threshold"] =  f"{int(float(node_info["Threshold"]) * (2**16)):08x}"
+        # node_info["Threshold"] =  f"{int(float(node_info["Threshold"]) * (2**16)):08x}" #32bit
+        node_info["Threshold"] =  f"{int(float(node_info["Threshold"]) * (2**8)):04x}" #16bit
         node_info["Left_Child"] = f"{int(node_info["Left_Child"]):02x}"
         node_info["Right_Child"] = f"{int(node_info["Right_Child"]):02x}"
         node_info["Prediction"] = "FF"
@@ -87,8 +88,8 @@ def convert_pkl_to_csv(pkl_path, csv_path, feature_names, mode="mem"):
 if __name__ == "__main__":
     feature_names =         ["A_ID", "T_A", "D_E", "DLS"]
     feature_names_mapping = ["00", "01", "10", "11"]
-    pkl_file = "src/datasets_release/random_forest_model_v4_lite.pkl"  
-    csv_file = "src/random_forest_model_v4_optimized_LUT_mem.csv"      
+    pkl_file = "random_forest_model_v4_lite_17ts.pkl"  
+    csv_file = "src/random_forest_model_v4_lite_17ts_LUT.csv"      
     
     
     convert_pkl_to_csv(pkl_file, csv_file, feature_names_mapping, mode="mem")
