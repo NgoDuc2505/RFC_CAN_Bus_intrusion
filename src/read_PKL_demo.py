@@ -52,11 +52,11 @@ def convertNodeToMemFile(node_info: dict[str, any]) -> dict[str, any]:
         node_info["Right_Child"] = str(int(node_info['Right_Child']))
         node_info["Prediction"] = "FF"  # Giữ nguyên "FF" thành "255"
     else:
-        node_info["Threshold"] = ""
-        node_info["Left_Child"] = ""
-        node_info["Right_Child"] = ""
+        node_info["Threshold"] = "0"
+        node_info["Left_Child"] = "0"
+        node_info["Right_Child"] = "0"
         node_info["Prediction"] = str(int(node_info['Prediction']))
-        node_info["Feature"] = ""
+        node_info["Feature"] = "-1"
     return node_info
 
 

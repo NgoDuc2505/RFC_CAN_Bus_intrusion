@@ -6,7 +6,8 @@ feature_index_to_name = {
     0: 'arbitration_id',
     1: 'inter_arrival_time',
     10: 'data_entropy',
-    11: 'dls'
+    11: 'dls',
+    -1:'none'
 }
 
 # Hàm đọc LUT từ file CSV
@@ -26,21 +27,23 @@ def predict_from_tree(tree_df, input_data, verbose=False):
             return None
         row = matches.iloc[0]
         
-        # Kiểm tra nếu là nút lá (no feature value)
-        feature_name = None if pd.isna(row['Feature']) else feature_index_to_name.get(row['Feature'], None)
-        if feature_name is None:
+        # Kiểm tra nếu là nút lá (Feature là NaN hoặc -1)
+        is_leaf = pd.isna(row['Feature']) or row['Feature'] == -1
+        feature_name = None if is_leaf else feature_index_to_name.get(row['Feature'], "-1")
+        
+        if is_leaf:
             # Nếu là nút lá, trả về prediction
             if verbose:
                 print(f"✅ Node {node} là node lá. Prediction = {row['Prediction']}")
             return row['Prediction']
 
         # Nếu không phải nút lá, tiếp tục so sánh
-        threshold = row['Threshold'] / (1 << 20)  # Fixed-point Q12.20
+        threshold = row['Threshold']   # Fixed-point Q12.20
         feature_value = input_data[feature_name]
 
         if verbose:
-            print(f"🧠 Node {node}: {feature_name} ({feature_value:.6f}) "
-                  f"{'<= ' if feature_value <= threshold else '>  '} {threshold:.6f}")
+            print(f"🧠 Node {node}: {feature_name} ({feature_value:.4f}) "
+                  f"{'<= ' if feature_value <= threshold else '>  '} {threshold}")
 
         if feature_value <= threshold:
             node = row['Left_Child']
@@ -52,6 +55,7 @@ def vote_predictions(trees, input_data, verbose=False):
     predictions = []
     for tree_path in trees:
         tree_df = load_tree_from_csv(tree_path)
+        print(f"\n=>{tree_path}")
         pred = predict_from_tree(tree_df, input_data, verbose=verbose)
         predictions.append(pred)
 
@@ -69,7 +73,7 @@ if __name__ == "__main__":
     # Dữ liệu đầu vào
     sample_input_2 = {
         'arbitration_id': 977,
-        'inter_arrival_time': 0.02,
+        'inter_arrival_time': 0.01,
         'data_entropy': 1.549,
         'dls': 8,
     }
