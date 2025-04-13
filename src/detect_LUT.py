@@ -87,6 +87,7 @@ def predict_forest(forest, input_dict):
 
     for tree_id, tree in forest.items():
         pred = predict_tree(tree, input_dict)
+        print(f"Tree {tree_id}: Prediction: {pred}")
         if pred is not None:
             if pred not in vote_counts:
                 vote_counts[pred] = 1

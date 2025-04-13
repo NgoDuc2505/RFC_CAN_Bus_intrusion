@@ -34,6 +34,6 @@ def modelSplit(csv_file: str, output_dir: str):
         print(f"Đã lưu thông tin nhóm cây vào {summary_file}")
 
 if __name__ == "__main__":
-    csv_file = "random_forest_model_v4_optimized_LUT_mem.csv"  
-    output_file_name = "split_model_v4"
+    csv_file = "src/random_forest_model_v4_lite_17ts_LUT.csv"  
+    output_file_name = "split_model_v4_v2"
     modelSplit(csv_file, output_file_name)
