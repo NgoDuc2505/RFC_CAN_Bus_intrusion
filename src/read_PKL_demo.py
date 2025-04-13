@@ -80,7 +80,7 @@ def convert_and_save_each_tree_as_csv(pkl_path, output_folder, feature_names, mo
 if __name__ == "__main__":
     feature_names = ["A_ID", "T_A", "D_E", "DLS"]
     feature_names_mapping = ["00", "01", "10", "11"]
-    pkl_file = "src/datasets_release/random_forest_model_v4_lite.pkl"
+    pkl_file = "random_forest_model_v5_lite.pkl"
     output_folder = "src/LUT/"
 
     convert_and_save_each_tree_as_csv(pkl_file, output_folder, feature_names_mapping, mode="mem")

@@ -1,7 +1,7 @@
 import pandas as pd
 import struct
 from collections import Counter
-
+import os
 # Bản đồ chỉ số feature → tên feature
 feature_index_to_name = {
     0: 'arbitration_id',
@@ -30,18 +30,20 @@ def convert_csv_to_bin(csv_path, bin_path):
             else:
                 prediction = int(pred_raw) & 0xFF
 
-            packed = struct.pack('<BbfBBB', node, feature, threshold, left, right, prediction)
+            packed = struct.pack('<HffHHB', node, feature, threshold, left, right, prediction)
             f.write(packed)
+
+    print(f"✅ File nhị phân đã được ghi vào: {bin_path}")
 
 # 📥 B2: Đọc cây từ file .bin (dạng dict)
 def load_tree_from_bin_small(bin_path):
     tree = {}
     with open(bin_path, 'rb') as f:
         while True:
-            bytes_data = f.read(9)
+            bytes_data = f.read(15)
             if not bytes_data:
                 break
-            node, feature, threshold, left, right, prediction = struct.unpack('<BbfBBB', bytes_data)
+            node, feature, threshold, left, right, prediction = struct.unpack('<HffHHB', bytes_data)
             tree[node] = {
                 'Feature': feature,
                 'Threshold': threshold,
@@ -99,21 +101,29 @@ def vote_predictions_bin(tree_bin_paths, input_data, verbose=False):
 # 🧪 B5: Chạy thử
 if __name__ == "__main__":
     # Bước 1: Convert tất cả cây CSV → BIN
-    for i in range(17):
-        csv_path = f"src/LUT/tree_{i}.csv"
-        bin_path = f"src/LUT/tree_{i}.bin"
-        convert_csv_to_bin(csv_path, bin_path)
+    folder_path = "src/LUT"
+    tree_count = len([f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))])
+    # for i in range(tree_count-1):
+    #     csv_path = f"src/LUT/tree_{i}.csv"
+    #     bin_path = f"src/BIN/tree_{i}.bin"
+    #     convert_csv_to_bin(csv_path, bin_path)
 
     # Bước 2: Dự đoán với mẫu
     sample_input = {
+        'arbitration_id': 342,
+        'inter_arrival_time': 0.0,
+        'data_entropy': 1.061,
+        'dls': 8,
+    } #1
+    sample_input_2 = {
         'arbitration_id': 977,
-        'inter_arrival_time': 0.01,
+        'inter_arrival_time': 0.02,
         'data_entropy': 1.549,
         'dls': 8,
-    }
+    } #0
 
     # Bước 3: Voting
-    tree_bin_paths = [f"src/LUT/tree_{i}.bin" for i in range(17)]
+    tree_bin_paths = [f"src/BIN/tree_{i}.bin" for i in range(tree_count-1)]
     voted_prediction, prediction_counts = vote_predictions_bin(tree_bin_paths, sample_input, verbose=True)
 
     print(f"\n🧾 Final Voted Prediction: {voted_prediction} (0: Normal, 1: Attack)")
