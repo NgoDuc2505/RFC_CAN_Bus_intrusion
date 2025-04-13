@@ -2,4 +2,6 @@
 *.txt
 *.pkl
 *.log
+src/BIN
+*.bin
 Lib
