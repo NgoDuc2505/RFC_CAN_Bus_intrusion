@@ -6,3 +6,4 @@ src/BIN
 *.bin
 src/LUT
 Lib
+hex_lut
