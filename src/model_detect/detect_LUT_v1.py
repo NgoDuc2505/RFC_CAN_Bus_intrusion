@@ -72,10 +72,7 @@ if __name__ == "__main__":
 
     # Dữ liệu đầu vào
     sample_input = {
-      'arbitration_id': 977,
-        'inter_arrival_time': 0.02,
-        'data_entropy': 1.549,
-        'dls': 8,
+   'arbitration_id': 882, 'inter_arrival_time': 0.099141, 'data_entropy': 0.54356, 'dls': 8
     }
     # Thực hiện voting và lấy kết quả
     voted_prediction, prediction_counts = vote_predictions(trees, sample_input, verbose=True)

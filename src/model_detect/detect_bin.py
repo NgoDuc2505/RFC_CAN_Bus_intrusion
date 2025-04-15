@@ -161,11 +161,8 @@ if __name__ == "__main__":
     
     # Bước 2: Chuẩn bị dữ liệu đầu vào
     sample_input = {
-        'arbitration_id': 977,
-        'inter_arrival_time': 0.02,
-        'data_entropy': 1.549,
-        'dls': 8,
-    }
+        'arbitration_id': 882, 'inter_arrival_time': 0.099141, 'data_entropy': 0.54356, 'dls': 8
+    } #0
     
     # Bước 3: Tạo danh sách các file .bin
     bin_trees = [os.path.join(BIN_DIR, f"tree_{i}.bin") for i in range(NUM_TREES)]
@@ -178,3 +175,8 @@ if __name__ == "__main__":
     print(f"🧾 Kết quả dự đoán cuối cùng: {voted_pred} (0: Bình thường, 1: Tấn công)")
     print(f"📊 Thống kê vote: {dict(counts)}")
     print("="*50)
+
+
+#3.123 - 3.12344234234 3.1232423423 
+
+# 10
