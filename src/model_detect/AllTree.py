@@ -64,8 +64,8 @@ def analyze_forest_summary(pkl_path, feature_names, output_csv):
     print(f"📄 Đã lưu thống kê vào {output_csv}")
 
 if __name__ == "__main__":
-    feature_names = ["A_ID", "T_A", "D_E", "DLS"]
-    pkl_path = "src/datasets_release/random_forest_model_v5_lite.pkl"
+    feature_names = ["timestamp", "arbitration_id", "data_field"]
+    pkl_path = "src/datasets_release/model_candata_train_balance_set.pkl"
     output_csv = "src/LUT/forest_summary.csv"
 
     analyze_forest_summary(pkl_path, feature_names, output_csv)
