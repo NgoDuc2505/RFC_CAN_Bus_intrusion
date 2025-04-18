@@ -1,0 +1,24 @@
+Binary tree format information:
+====================================
+Total tree: 21
+file: tree_0.bin includes 369 lines and each row is 16 bytes
+file: tree_1.bin includes 535 lines and each row is 16 bytes
+file: tree_2.bin includes 377 lines and each row is 16 bytes
+file: tree_3.bin includes 465 lines and each row is 16 bytes
+file: tree_4.bin includes 491 lines and each row is 16 bytes
+file: tree_5.bin includes 353 lines and each row is 16 bytes
+file: tree_6.bin includes 347 lines and each row is 16 bytes
+file: tree_7.bin includes 325 lines and each row is 16 bytes
+file: tree_8.bin includes 409 lines and each row is 16 bytes
+file: tree_9.bin includes 347 lines and each row is 16 bytes
+file: tree_10.bin includes 491 lines and each row is 16 bytes
+file: tree_11.bin includes 449 lines and each row is 16 bytes
+file: tree_12.bin includes 501 lines and each row is 16 bytes
+file: tree_13.bin includes 433 lines and each row is 16 bytes
+file: tree_14.bin includes 309 lines and each row is 16 bytes
+file: tree_15.bin includes 323 lines and each row is 16 bytes
+file: tree_16.bin includes 521 lines and each row is 16 bytes
+file: tree_17.bin includes 333 lines and each row is 16 bytes
+file: tree_18.bin includes 341 lines and each row is 16 bytes
+file: tree_19.bin includes 519 lines and each row is 16 bytes
+file: tree_20.bin includes 363 lines and each row is 16 bytes

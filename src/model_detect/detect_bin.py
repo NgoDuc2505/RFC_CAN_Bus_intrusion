@@ -13,7 +13,7 @@ FEATURE_MAPPING = {
 }
 
 BIN_DIR = "src/LUT"
-NUM_TREES = 49
+NUM_TREES = 21
 # =======================================================
 
 # ================== CHUYỂN ĐỔI CSV -> BIN ==============
@@ -21,7 +21,7 @@ def convert_csv_to_bin(csv_path, bin_path):
     """Chuyển đổi file CSV cây quyết định sang binary format"""
     df = pd.read_csv(csv_path)
     df.columns = df.columns.str.strip()
-
+    len_packet = 0
     with open(bin_path, 'wb') as f:
         for _, row in df.iterrows():
             # Xử lý các giá trị
@@ -64,18 +64,26 @@ def convert_csv_to_bin(csv_path, bin_path):
             # Thêm prediction (1 byte) và padding (3 bytes)
             packed += bytes(1) 
             f.write(packed)
+            len_packet = len(packed)  # Lưu độ dài của gói dữ liệu
+
     
     print(f"✅ Đã chuyển đổi {csv_path} -> {bin_path}")
+    return len(df), (len_packet)
 
 def convert_all_csv_to_bin():
     """Chuyển đổi tất cả các file CSV trong thư mục"""
-    for i in range(NUM_TREES):
-        csv_path = os.path.join(BIN_DIR, f"tree_{i}.csv")
-        bin_path = os.path.join(BIN_DIR, f"tree_{i}.bin")
-        if os.path.exists(csv_path):
-            convert_csv_to_bin(csv_path, bin_path)
-        else:
-            print(f"⚠️ File {csv_path} không tồn tại")
+    with open(os.path.join(BIN_DIR, "tree_info.txt"), 'w') as f:
+        f.write("Binary tree format information:\n")
+        f.write("====================================\n")   
+        f.write("Total tree: " + str(NUM_TREES) + "\n")
+        for i in range(NUM_TREES):
+            csv_path = os.path.join(BIN_DIR, f"tree_{i}.csv")
+            bin_path = os.path.join(BIN_DIR, f"tree_{i}.bin")
+            if os.path.exists(csv_path):
+                df_len, pck_len = convert_csv_to_bin(csv_path, bin_path)
+                f.write(f"file: tree_{i}.bin includes {df_len} lines and each row is {pck_len} bytes\n")
+            else:
+                print(f"⚠️ File {csv_path} không tồn tại")
 # =======================================================
 
 # ================ ĐỌC VÀ DỰ ĐOÁN TỪ BIN ================
@@ -160,21 +168,21 @@ if __name__ == "__main__":
     convert_all_csv_to_bin()
     
     # Bước 2: Chuẩn bị dữ liệu đầu vào
-    sample_input = {
-        'arbitration_id': 882, 'inter_arrival_time': 0.099141, 'data_entropy': 0.54356, 'dls': 8
-    } #0
+    # sample_input = {
+    #     'arbitration_id': 882, 'inter_arrival_time': 0.099141, 'data_entropy': 0.54356, 'dls': 8
+    # } #0
     
     # Bước 3: Tạo danh sách các file .bin
-    bin_trees = [os.path.join(BIN_DIR, f"tree_{i}.bin") for i in range(NUM_TREES)]
+    # bin_trees = [os.path.join(BIN_DIR, f"tree_{i}.bin") for i in range(NUM_TREES)]
     
     # Bước 4: Thực hiện dự đoán
-    voted_pred, counts = vote_predictions_bin(bin_trees, sample_input, verbose=True)
+    # voted_pred, counts = vote_predictions_bin(bin_trees, sample_input, verbose=True)
     
     # Bước 5: Hiển thị kết quả
-    print("\n" + "="*50)
-    print(f"🧾 Kết quả dự đoán cuối cùng: {voted_pred} (0: Bình thường, 1: Tấn công)")
-    print(f"📊 Thống kê vote: {dict(counts)}")
-    print("="*50)
+    # print("\n" + "="*50)
+    # print(f"🧾 Kết quả dự đoán cuối cùng: {voted_pred} (0: Bình thường, 1: Tấn công)")
+    # print(f"📊 Thống kê vote: {dict(counts)}")
+    # print("="*50)
 
 
 #3.123 - 3.12344234234 3.1232423423 
