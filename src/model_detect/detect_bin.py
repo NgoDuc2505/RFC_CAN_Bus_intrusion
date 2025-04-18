@@ -5,15 +5,15 @@ from collections import Counter
 
 # ====================== CẤU HÌNH ======================
 FEATURE_MAPPING = {
-    0x00: 'arbitration_id',
-    0x01: 'inter_arrival_time',
-    0x0A: 'data_entropy',
-    0x0B: 'dls',
-    0xFF: 'none'
+    0: 'arbitration_id',
+    1: 'inter_arrival_time',
+    10: 'data_entropy',
+    11: 'dls',
+    -1: 'none'
 }
 
 BIN_DIR = "src/LUT"
-NUM_TREES = 48  # Số lượng cây trong rừng
+NUM_TREES = 49
 # =======================================================
 
 # ================== CHUYỂN ĐỔI CSV -> BIN ==============
@@ -26,7 +26,7 @@ def convert_csv_to_bin(csv_path, bin_path):
         for _, row in df.iterrows():
             # Xử lý các giá trị
             node = int(row['Node'])
-            feature = int(float(row['Feature'])) if not pd.isna(row['Feature']) else 0xFF
+            feature = int(float(row['Feature'])) if not pd.isna(row['Feature']) else -1
             
             # Xử lý threshold
             threshold = float(row['Threshold']) if not pd.isna(row['Threshold']) else 0.0
@@ -36,17 +36,24 @@ def convert_csv_to_bin(csv_path, bin_path):
             right = int(float(row['Right_Child'])) if not pd.isna(row['Right_Child']) else 0
             
             # Xử lý prediction (QUAN TRỌNG)
-            pred_raw = str(row['Prediction']).strip().upper()
-            if pred_raw == 'FF':
-                prediction = 0xFF  # 255 - Nút trong
-            else:
-                prediction = int(float(pred_raw))  # 0 hoặc 1 - Nút lá
-                if prediction not in (0, 1):
+            pred_raw = str(row['Prediction']).strip()
+            try:
+                prediction = int(float(pred_raw))  # Chuyển về số nguyên
+                if prediction == -1:
+                    pass  # Nút trong
+                elif prediction in (0, 1):
+                    pass  # Nút lá
+                else:
+                    raise ValueError(f"Giá trị prediction không hợp lệ: {pred_raw}")
+            except ValueError:
+                if pred_raw.upper() == 'FF':
+                    prediction = -1  # Coi 'FF' như -1
+                else:
                     raise ValueError(f"Giá trị prediction không hợp lệ: {pred_raw}")
 
-            # Đóng gói dữ liệu (16 bytes/node)
+            # Đóng gói dữ liệu (12 bytes/node)
             packed = struct.pack(
-                '<HBfHHB',  # Format: uint16, uint8, float32, uint16, uint16, uint8
+                '<HifHHb',  # Format: uint16, int32, float32, uint16, uint16
                 node,
                 feature,
                 threshold,
@@ -54,7 +61,8 @@ def convert_csv_to_bin(csv_path, bin_path):
                 right,
                 prediction
             )
-            packed += bytes(4)  # Padding để đủ 16 bytes
+            # Thêm prediction (1 byte) và padding (3 bytes)
+            packed += bytes(1) 
             f.write(packed)
     
     print(f"✅ Đã chuyển đổi {csv_path} -> {bin_path}")
@@ -72,23 +80,23 @@ def convert_all_csv_to_bin():
 
 # ================ ĐỌC VÀ DỰ ĐOÁN TỪ BIN ================
 def load_bin_tree(bin_path):
-    """Đọc và parse cây từ file binary"""
+    """Đọc cây nhị phân từ file với khung dữ liệu cố định 16 bytes/node"""
     nodes = {}
     with open(bin_path, 'rb') as f:
         while True:
-            data = f.read(16)  # Mỗi node 16 bytes
+            data = f.read(16)
             if not data or len(data) < 16:
                 break
-                
-            # Giải mã struct
-            node_id, feature, threshold, left, right, pred = struct.unpack('<HBfHHB', data[:12])
+
+            # Giải mã 16 byte theo đúng định dạng
+            node_id, feature, threshold, left, right, prediction = struct.unpack('<HifHHb', data[:15])
             
             nodes[node_id] = {
                 'feature': feature,
                 'threshold': threshold,
                 'left': left,
                 'right': right,
-                'prediction': pred
+                'prediction': prediction
             }
     return nodes
 
@@ -103,8 +111,8 @@ def predict_from_bin_tree(tree_nodes, input_data, verbose=False):
                 print(f"❌ Node {current_node} không tồn tại")
             return None
         
-        # Nếu là nút lá (prediction khác 0xFF)
-        if node['prediction'] != 0xFF:
+        # Nếu là nút lá (prediction khác -1)
+        if node['prediction'] != -1:
             if verbose:
                 print(f"✅ Node {current_node}: Prediction = {node['prediction']}")
             return node['prediction']
@@ -153,17 +161,8 @@ if __name__ == "__main__":
     
     # Bước 2: Chuẩn bị dữ liệu đầu vào
     sample_input = {
-        'arbitration_id': 342,
-        'inter_arrival_time': 0.0,
-        'data_entropy': 1.061,
-        'dls': 8,
-    } #1
-    sample_input_2 = {
-        'arbitration_id': 977,
-        'inter_arrival_time': 0.02,
-        'data_entropy': 1.549,
-        'dls': 8,
-    }
+        'arbitration_id': 882, 'inter_arrival_time': 0.099141, 'data_entropy': 0.54356, 'dls': 8
+    } #0
     
     # Bước 3: Tạo danh sách các file .bin
     bin_trees = [os.path.join(BIN_DIR, f"tree_{i}.bin") for i in range(NUM_TREES)]
@@ -176,3 +175,10 @@ if __name__ == "__main__":
     print(f"🧾 Kết quả dự đoán cuối cùng: {voted_pred} (0: Bình thường, 1: Tấn công)")
     print(f"📊 Thống kê vote: {dict(counts)}")
     print("="*50)
+
+
+#3.123 - 3.12344234234 3.1232423423 
+# làm lại prediction (đúng) 
+# 
+# 10
+#

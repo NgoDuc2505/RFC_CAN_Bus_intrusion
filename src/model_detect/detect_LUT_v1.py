@@ -29,7 +29,7 @@ def predict_from_tree(tree_df, input_data, verbose=False):
         
         # Kiểm tra nếu là nút lá (Feature là NaN hoặc -1)
         is_leaf = pd.isna(row['Feature']) or row['Feature'] == -1
-        feature_name = None if is_leaf else feature_index_to_name.get(row['Feature'], "-1")
+        feature_name = None if is_leaf else feature_index_to_name.get(row['Feature'], None)
         
         if is_leaf:
             # Nếu là nút lá, trả về prediction
@@ -39,16 +39,22 @@ def predict_from_tree(tree_df, input_data, verbose=False):
 
         # Nếu không phải nút lá, tiếp tục so sánh
         threshold = row['Threshold']   # Fixed-point Q12.20
-        feature_value = input_data[feature_name]
+        if feature_name is not None:
+            feature_value = input_data.get(feature_name)
+            if feature_value is None:
+                if verbose:
+                    print(f"❌ Feature '{feature_name}' không tồn tại trong input.")
+                return None
 
-        if verbose:
-            print(f"🧠 Node {node}: {feature_name} ({feature_value:.5f}) "
-                  f"{'<= ' if feature_value <= threshold else '>  '} {threshold}")
+            if verbose:
+                print(f"🧠 Node {node}: {feature_name} ({feature_value:.5f}) "
+                      f"{'<= ' if feature_value <= threshold else '>  '} {threshold}")
 
-        if feature_value <= threshold:
-            node = row['Left_Child']
-        else:
-            node = row['Right_Child']
+            if feature_value <= threshold:
+                node = row['Left_Child']
+            else:
+                node = row['Right_Child']
+
 
 # Hàm thực hiện voting từ các cây
 def vote_predictions(trees, input_data, verbose=False):
@@ -72,10 +78,7 @@ if __name__ == "__main__":
 
     # Dữ liệu đầu vào
     sample_input = {
-      'arbitration_id': 977,
-        'inter_arrival_time': 0.02,
-        'data_entropy': 1.549,
-        'dls': 8,
+  'arbitration_id': 210, 'inter_arrival_time': 0.0194, 'data_entropy': 1.29879, 'dls': 8
     }
     # Thực hiện voting và lấy kết quả
     voted_prediction, prediction_counts = vote_predictions(trees, sample_input, verbose=True)
@@ -83,3 +86,4 @@ if __name__ == "__main__":
     # Hiển thị kết quả
     print(f"\n🧾 Final Voted Prediction: {voted_prediction} (0: Normal, 1: Attack)")
     print(f"Votes: {prediction_counts}")
+

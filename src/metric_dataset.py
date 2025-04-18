@@ -6,7 +6,7 @@ def metric_label(inputCSV, label_name = "attack"):
     except FileNotFoundError:
         print(f"File: {inputCSV} not found.")
         return None
-    label_counts = df[label_name].value_counts()
+    label_counts = df['attack'].value_counts()
     total_sample = df.shape[0]
     return label_counts, total_sample
 

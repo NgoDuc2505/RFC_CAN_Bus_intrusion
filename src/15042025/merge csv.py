@@ -121,48 +121,32 @@ def main():
     
     config = {
         "normal_path": {
-            "path": "src/su2017/attack-free/*.csv",
+            "path": "src/15042025/dataset/2017-subaru/attack-free/*.csv",
             "label": 0  # Label 0 cho dữ liệu bình thường
         },
         "attack_paths": {
-            "combined": {
-                "path": "src/su2017/combined-attacks/*.csv",
-                "label": 1  # Label 1 cho tấn công
-            },
             "dos": {
-                "path": "src/su2017/DoS-attacks/*.csv",
+                "path": "src/15042025/dataset/2017-subaru/DoS-attacks/*.csv",
                 "label": 1
             },
             "fuzzy": {
-                "path": "src/su2017/fuzzing-attacks/*.csv",
-                "label": 1
-            },
-            "gear": {
-                "path": "src/su2017/gear-attacks/*.csv",
-                "label": 1
-            },
-            "interval": {
-                "path": "src/su2017/interval-attacks/*.csv",
+                "path": "src/15042025/dataset/2017-subaru/fuzzing-attacks/*.csv",
                 "label": 1
             },
             "rpm": {
-                "path": "RFC_CAN_Bus_intrusion/src/su2017/rpmear-attacks/*.csv",
+                "path": "src/15042025/dataset/2017-subaru/rpmear-attacks/*.csv",
                 "label": 1
             },
             "speed": {
-                "path": "RFC_CAN_Bus_intrusion/src/su2017/speed-attacks/*.csv",
-                "label": 1
-            },
-            "standstill": {
-                "path": "RFC_CAN_Bus_intrusion/src/su2017/standstill-attacks/*.csv",
+                "path": "src/15042025/dataset/2017-subaru/speed-attacks/*.csv",
                 "label": 1
             },
             "systematic": {
-                "path": "RFC_CAN_Bus_intrusion/src/su2017/systematic-attacks/*.csv",
+                "path": "src/15042025/dataset/2017-subaru/systematic-attacks/*.csv",
                 "label": 1
             },
         },
-        "output_file": "can_data_processed.csv"
+        "output_file": "src/15042025/dataset/2017-subaru/can_data_processed.csv"
     }
 
     # Xử lý dữ liệu bình thường (label = 0)
