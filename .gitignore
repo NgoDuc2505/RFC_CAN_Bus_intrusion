@@ -1,5 +1,4 @@
 *.csv
-*.txt
 *.pkl
 *.log
 src/BIN
