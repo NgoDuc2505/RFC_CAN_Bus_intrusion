@@ -1,0 +1,16 @@
+files: src/datasets/train_01/set_01/test_04_unknown_vehicle_unknown_attack/double-3.csv 
+files: src/datasets/train_01/set_01/test_04_unknown_vehicle_unknown_attack/double-4.csv 
+files: src/datasets/train_01/set_01/test_04_unknown_vehicle_unknown_attack/fuzzing-3.csv 
+files: src/datasets/train_01/set_01/test_04_unknown_vehicle_unknown_attack/fuzzing-4.csv 
+files: src/datasets/train_01/set_01/test_04_unknown_vehicle_unknown_attack/interval-3.csv 
+files: src/datasets/train_01/set_01/test_04_unknown_vehicle_unknown_attack/interval-4.csv 
+files: src/datasets/train_01/set_01/test_04_unknown_vehicle_unknown_attack/speed-3.csv 
+files: src/datasets/train_01/set_01/test_04_unknown_vehicle_unknown_attack/speed-4.csv 
+files: src/datasets/train_01/set_01/test_04_unknown_vehicle_unknown_attack/systematic-3.csv 
+files: src/datasets/train_01/set_01/test_04_unknown_vehicle_unknown_attack/systematic-4.csv 
+files: src/datasets/train_01/set_01/test_04_unknown_vehicle_unknown_attack/triple-3.csv 
+files: src/datasets/train_01/set_01/test_04_unknown_vehicle_unknown_attack/triple-4.csv 
+total: 13220555 
+is_equal
+True     0.838909
+False    0.161091

@@ -1,0 +1,12 @@
+files: src/datasets/train_01/set_01/test_01_known_vehicle_known_attack/DoS-3.csv 
+files: D:/VKU/NCKH2025/Random_Forest_Classifier_CAN_Bus/rfc/src/datasets/train_01/set_01/test_01_known_vehicle_known_attack/DoS-4.csv 
+files: D:/VKU/NCKH2025/Random_Forest_Classifier_CAN_Bus/rfc/src/datasets/train_01/set_01/test_01_known_vehicle_known_attack/force-neutral-3.csv 
+files: D:/VKU/NCKH2025/Random_Forest_Classifier_CAN_Bus/rfc/src/datasets/train_01/set_01/test_01_known_vehicle_known_attack/force-neutral-4.csv 
+files: D:/VKU/NCKH2025/Random_Forest_Classifier_CAN_Bus/rfc/src/datasets/train_01/set_01/test_01_known_vehicle_known_attack/rpm-3.csv 
+files: D:/VKU/NCKH2025/Random_Forest_Classifier_CAN_Bus/rfc/src/datasets/train_01/set_01/test_01_known_vehicle_known_attack/rpm-4.csv 
+files: D:/VKU/NCKH2025/Random_Forest_Classifier_CAN_Bus/rfc/src/datasets/train_01/set_01/test_01_known_vehicle_known_attack/standstill-3.csv 
+files: D:/VKU/NCKH2025/Random_Forest_Classifier_CAN_Bus/rfc/src/datasets/train_01/set_01/test_01_known_vehicle_known_attack/standstill-4.csv 
+total: 5702670 
+is_equal
+True     0.980565
+False    0.019435

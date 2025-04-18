@@ -1,0 +1,4 @@
+Summary of tree groups by root node Feature:
+Feature=00: 1 cây
+Feature=01: 10 cây
+Feature=10: 6 cây

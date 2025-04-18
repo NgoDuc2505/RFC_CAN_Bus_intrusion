@@ -1,0 +1,12 @@
+files: src/datasets/train_01/set_01/test_02_unknown_vehicle_known_attack/DoS-3.csv 
+files: src/datasets/train_01/set_01/test_02_unknown_vehicle_known_attack/DoS-4.csv 
+files: src/datasets/train_01/set_01/test_02_unknown_vehicle_known_attack/force-neutral-3.csv 
+files: src/datasets/train_01/set_01/test_02_unknown_vehicle_known_attack/force-neutral-4.csv 
+files: src/datasets/train_01/set_01/test_02_unknown_vehicle_known_attack/rpm-3.csv 
+files: src/datasets/train_01/set_01/test_02_unknown_vehicle_known_attack/rpm-4.csv 
+files: src/datasets/train_01/set_01/test_02_unknown_vehicle_known_attack/standstill-3.csv 
+files: src/datasets/train_01/set_01/test_02_unknown_vehicle_known_attack/standstill-4.csv 
+total: 6447917 
+is_equal
+True     0.579509
+False    0.420491
