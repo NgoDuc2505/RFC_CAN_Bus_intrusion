@@ -84,7 +84,11 @@ if __name__ == "__main__":
         'arbitration_id': '0C1',
         'data_field': "0000000000000000"
     }
-    voted_prediction, prediction_counts = vote_predictions(trees, sample_input, verbose=True)
+
+    sample_input_0 = {
+        'timestamp': 1672531200, 'arbitration_id': '191', 'data_field': "8409A80D004108",
+    }
+    voted_prediction, prediction_counts = vote_predictions(trees, sample_input_0, verbose=True)
     print(f"\n🧾 Final Voted Prediction: {voted_prediction} (0: Normal, 1: Attack)")
     print(f"Votes: {prediction_counts}")
     print(f"Total Trees: {len(trees)}")
