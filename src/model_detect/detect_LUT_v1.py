@@ -1,22 +1,20 @@
+# detect_LUT_csv.py
 import pandas as pd
 from collections import Counter
 
 # Ánh xạ chỉ số feature sang tên cột
 feature_index_to_name = {
-    0: 'arbitration_id',
-    1: 'inter_arrival_time',
-    10: 'data_entropy',
-    11: 'dls',
-    -1:'none'
+    0: 'timestamp',
+    1: 'arbitration_id',
+    10: 'data_field',
+    -1: 'none'
 }
 
-# Hàm đọc LUT từ file CSV
 def load_tree_from_csv(csv_path):
     df = pd.read_csv(csv_path)
-    df.columns = df.columns.str.strip()  # Xóa khoảng trắng
+    df.columns = df.columns.str.strip()
     return df
 
-# Hàm dự đoán giống random forest dựa trên cây
 def predict_from_tree(tree_df, input_data, verbose=False):
     node = 0
     while True:
@@ -26,64 +24,67 @@ def predict_from_tree(tree_df, input_data, verbose=False):
                 print(f"❌ Node {node} không tồn tại.")
             return None
         row = matches.iloc[0]
-        
-        # Kiểm tra nếu là nút lá (Feature là NaN hoặc -1)
         is_leaf = pd.isna(row['Feature']) or row['Feature'] == -1
-        feature_name = None if is_leaf else feature_index_to_name.get(row['Feature'], None)
-        
+        feature_name = None if is_leaf else feature_index_to_name.get(int(row['Feature']), None)
+
         if is_leaf:
-            # Nếu là nút lá, trả về prediction
             if verbose:
                 print(f"✅ Node {node} là node lá. Prediction = {row['Prediction']}")
-            return row['Prediction']
+            return int(row['Prediction'])
 
-        # Nếu không phải nút lá, tiếp tục so sánh
-        threshold = row['Threshold']   # Fixed-point Q12.20
+        threshold = float(row['Threshold'])
         if feature_name is not None:
             feature_value = input_data.get(feature_name)
-            if feature_value is None:
+
+            # Ép kiểu nếu cần
+            try:
+                if feature_name == 'arbitration_id':
+                    if isinstance(feature_value, str):
+                        feature_value = int(feature_value, 16)
+
+                elif feature_name == 'timestamp':
+                    feature_value = float(feature_value)
+
+                elif feature_name == 'data_field':
+                    # Tùy logic, bạn có thể ép về int hoặc giữ nguyên string
+                    # ví dụ: int từ hex string:
+                    feature_value = int(feature_value, 16)
+
+            except Exception as e:
                 if verbose:
-                    print(f"❌ Feature '{feature_name}' không tồn tại trong input.")
+                    print(f"❌ Lỗi khi ép kiểu feature '{feature_name}': {e}")
                 return None
 
             if verbose:
-                print(f"🧠 Node {node}: {feature_name} ({feature_value:.5f}) "
+                print(f"🧠 Node {node}: {feature_name} ({feature_value}) "
                       f"{'<= ' if feature_value <= threshold else '>  '} {threshold}")
 
             if feature_value <= threshold:
-                node = row['Left_Child']
+                node = int(row['Left_Child'])
             else:
-                node = row['Right_Child']
+                node = int(row['Right_Child'])
 
 
-# Hàm thực hiện voting từ các cây
 def vote_predictions(trees, input_data, verbose=False):
     predictions = []
     for tree_path in trees:
+        print(f"\n📁 Đang xử lý: {tree_path}")
         tree_df = load_tree_from_csv(tree_path)
-        print(f"\n=>{tree_path}")
         pred = predict_from_tree(tree_df, input_data, verbose=verbose)
         predictions.append(pred)
 
-    # Thực hiện voting (bỏ phiếu), nếu phiếu 0 nhiều hơn, dự đoán là 0, ngược lại là 1
     prediction_counts = Counter(predictions)
-    voted_prediction = prediction_counts.most_common(1)[0][0]  # Lấy dự đoán phổ biến nhất
-
+    voted_prediction = prediction_counts.most_common(1)[0][0]
     return voted_prediction, prediction_counts
 
-# Main chạy như bạn yêu cầu
 if __name__ == "__main__":
-    # Các cây mà bạn muốn dự đoán (tree_0 đến tree_16)
-    trees = [f"src/LUT/tree_{i}.csv" for i in range(49)]
-
-    # Dữ liệu đầu vào
+    trees = [f"src/LUT/tree_{i}.csv" for i in range(21)]
     sample_input = {
-  'arbitration_id': 210, 'inter_arrival_time': 0.0194, 'data_entropy': 1.29879, 'dls': 8
+        'timestamp': 1672531286.901432,
+        'arbitration_id': '0C1',
+        'data_field': "0000000000000000"
     }
-    # Thực hiện voting và lấy kết quả
     voted_prediction, prediction_counts = vote_predictions(trees, sample_input, verbose=True)
-    
-    # Hiển thị kết quả
     print(f"\n🧾 Final Voted Prediction: {voted_prediction} (0: Normal, 1: Attack)")
     print(f"Votes: {prediction_counts}")
-
+    print(f"Total Trees: {len(trees)}")
