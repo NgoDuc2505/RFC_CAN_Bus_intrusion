@@ -5,11 +5,9 @@ from collections import Counter
 
 # ====================== CẤU HÌNH ======================
 FEATURE_MAPPING = {
-    0: 'arbitration_id',
-    1: 'inter_arrival_time',
-    10: 'data_entropy',
-    11: 'dls',
-    -1: 'none'
+    '00': "timestamp",
+    '01': 'arbitration_id',
+    '10': 'data_field',
 }
 
 BIN_DIR = "src/LUT"
@@ -165,24 +163,30 @@ def vote_predictions_bin(bin_trees, input_data, verbose=False):
 # ====================== MAIN ===========================
 if __name__ == "__main__":
     # Bước 1: Chuyển đổi tất cả CSV sang BIN (nếu cần)
-    convert_all_csv_to_bin()
+    # convert_all_csv_to_bin()
     
     # Bước 2: Chuẩn bị dữ liệu đầu vào
-    # sample_input = {
-    #     'arbitration_id': 882, 'inter_arrival_time': 0.099141, 'data_entropy': 0.54356, 'dls': 8
-    # } #0
+    sample_input_0 = {
+        'timestamp': 1672531200, 'arbitration_id': '191', 'data_field': "8409A80D004108",
+    }
+
+    sample_input_1 = {
+         'timestamp': 1672531286.901432, 'arbitration_id': '0C1', 'data_field': "0000000000000000",
+    }
+
+
     
     # Bước 3: Tạo danh sách các file .bin
-    # bin_trees = [os.path.join(BIN_DIR, f"tree_{i}.bin") for i in range(NUM_TREES)]
+    bin_trees = [os.path.join(BIN_DIR, f"tree_{i}.bin") for i in range(NUM_TREES)]
     
     # Bước 4: Thực hiện dự đoán
-    # voted_pred, counts = vote_predictions_bin(bin_trees, sample_input, verbose=True)
+    voted_pred, counts = vote_predictions_bin(bin_trees, sample_input_1, verbose=True)
     
     # Bước 5: Hiển thị kết quả
-    # print("\n" + "="*50)
-    # print(f"🧾 Kết quả dự đoán cuối cùng: {voted_pred} (0: Bình thường, 1: Tấn công)")
-    # print(f"📊 Thống kê vote: {dict(counts)}")
-    # print("="*50)
+    print("\n" + "="*50)
+    print(f"🧾 Kết quả dự đoán cuối cùng: {voted_pred} (0: Bình thường, 1: Tấn công)")
+    print(f"📊 Thống kê vote: {dict(counts)}")
+    print("="*50)
 
 
 #3.123 - 3.12344234234 3.1232423423 
