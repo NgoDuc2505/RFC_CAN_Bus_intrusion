@@ -183,3 +183,9 @@ if __name__ == "__main__":
     #             "src/datasets/train_01/set_04/merged_train_01/merged_train_set_04.csv"]
     # split_dataset_by_label(list_split, "src/datasets/train_split_label", label=1, output_file_name="attack_only_full_set.csv")
     # merge_csv_only("src/datasets/train_split_label", "src/datasets/train_split_label/full_dataset", output_file_name="merged_train_set_01_with_02_03_04_label_1.csv")
+    inputCSVList = [
+        "src/datasets/train_01/set_01/test_01_known_vehicle_known_attack/DoS-4.csv",
+        "src/datasets/train_01/set_01/test_01_known_vehicle_known_attack/rpm-4.csv"
+    ]
+
+    split_dataset_by_label(inputCSVList, "src/datasets/test_split_label", label=1, output_file_name="attack_only_set01_test01_Dos4_rpm4.csv")
