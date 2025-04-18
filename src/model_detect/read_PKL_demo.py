@@ -80,7 +80,7 @@ def convert_and_save_each_tree_as_csv(pkl_path, output_folder, feature_names, mo
 if __name__ == "__main__":
     feature_names = ["timestamp", "arbitration_id", "data_field"]
     feature_names_mapping = ["00", "01", "10"]
-    pkl_file = "src/datasets_release/model_candata_train_balance_set.pkl"
+    pkl_file = "src/model_release/model_candata_train_balance_set.pkl"
     output_folder = "src/LUT/"
 
     convert_and_save_each_tree_as_csv(pkl_file, output_folder, feature_names_mapping, mode="mem")
