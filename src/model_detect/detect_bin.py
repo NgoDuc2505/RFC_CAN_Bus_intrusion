@@ -85,7 +85,7 @@ if __name__ == "__main__":
     }
 
     sample_input_0 = {
-        'timestamp': 1672531200, 'arbitration_id': '191', 'data_field': "8409A80D004108",
+        'timestamp':  1672531470.273081, 'arbitration_id': '3E9', 'data_field': "1B4C05111B511C69",
     }
 
     voted_prediction, prediction_counts = vote_predictions(trees, sample_input_0, verbose=True)
