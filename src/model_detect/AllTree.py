@@ -65,7 +65,7 @@ def analyze_forest_summary(pkl_path, feature_names, output_csv):
 
 if __name__ == "__main__":
     feature_names = ["timestamp", "arbitration_id", "data_field"]
-    pkl_path = "src/datasets_release/model_candata_train_balance_set.pkl"
-    output_csv = "src/LUT/forest_summary.csv"
+    pkl_path = "datasets_release/model_candata_train_balance_set_v5.pkl"
+    output_csv = "LUT/forest_summary_v5.csv"
 
     analyze_forest_summary(pkl_path, feature_names, output_csv)
