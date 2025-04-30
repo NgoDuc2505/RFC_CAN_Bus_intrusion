@@ -3,19 +3,21 @@ import csv
 # Hàm chuyển đổi một dòng CSV sang chuỗi nhị phân
 def convert_to_binary(node, feature, threshold, left_child, right_child, prediction):
     # Chuyển Node (10 bit)
-    node_bin = format(node, '010b')
+    node_bin = format(node, '09b')
 
-    # Chuyển Feature (4 bit), nếu feature là -1 thì dùng '1111'
-    feature_bin = '1111' if feature == '-1' else format(int(feature), '04b')
+    # Chuyển Feature (2 bit), nếu feature là -1 thì dùng '1111' [00 01 10 11]  
+    # [9bit Node][2 bit feature][64 bit threshold][9 bit left][9 bit right][2 bit prediction]
+    ## 
+    feature_bin = '11' if feature == '-1' else format(int(feature), '02b')
 
     # Threshold (64 bit HEX)
     threshold_bin = format(int(threshold, 16), '064b')
 
     # Left Child (10 bit)
-    left_child_bin = format(left_child, '010b')
+    left_child_bin = format(left_child, '09b')
 
     # Right Child (10 bit)
-    right_child_bin = format(right_child, '010b')
+    right_child_bin = format(right_child, '09b')
 
     # Prediction (2 bit), nếu prediction là -1 thì dùng '11', nếu prediction là 1 thì dùng '01', còn lại là '00'
     if prediction == '-1':
@@ -25,8 +27,47 @@ def convert_to_binary(node, feature, threshold, left_child, right_child, predict
     else:
         prediction_bin = '00'
 
+    # hex_string_node = hex(int(node_bin, 2))[2:].upper();
+    #   hex_string_node = hex(int(node_bin, 2))[2:].upper();
+    #   hex_string_node = hex(int(node_bin, 2))[2:].upper();
+    #   hex_string_node = hex(int(node_bin, 2))[2:].upper();
+    #   hex_string_node = hex(int(node_bin, 2))[2:].upper();
+
     # Kết hợp tất cả các phần lại với nhau
     return node_bin + feature_bin + threshold_bin + left_child_bin + right_child_bin + prediction_bin
+
+def convert_to_hex(node, feature, threshold, left_child, right_child, prediction):
+    # Chuyển Node (9 bit = 3 hex)
+    node_bin = format(node, '09b')
+    hex_node = format(int(node_bin, 2), '03X')
+
+    # Feature (2 bit = 1 hex)
+    feature_bin = '11' if feature == '-1' else format(int(feature), '02b')
+    hex_feature = format(int(feature_bin, 2), '01X')
+
+    # Threshold (64 bit = 16 hex)
+    threshold_bin = format(int(threshold, 16), '064b')
+    hex_threshold = format(int(threshold_bin, 2), '016X')
+
+    # Left child (9 bit = 3 hex)
+    left_bin = format(left_child, '09b')
+    hex_left = format(int(left_bin, 2), '03X')
+
+    # Right child (9 bit = 3 hex)
+    right_bin = format(right_child, '09b')
+    hex_right = format(int(right_bin, 2), '03X')
+
+    # Prediction (2 bit = 1 hex)
+    if prediction == '-1':
+        prediction_bin = '11'
+    elif prediction == '1':
+        prediction_bin = '01'
+    else:
+        prediction_bin = '00'
+    hex_prediction = format(int(prediction_bin, 2), '01X')
+
+    # Ghép tất cả lại
+    return hex_node + hex_feature + hex_threshold + hex_left + hex_right + hex_prediction
 
 # Đọc dữ liệu từ file CSV và chuyển đổi
 def convert_csv_to_mif(tree_id, output_mif):
@@ -55,10 +96,10 @@ def convert_csv_to_mif(tree_id, output_mif):
                 prediction = row[5]
 
                 # Chuyển đổi dòng CSV thành chuỗi nhị phân
-                binary_string = convert_to_binary(node, feature, threshold, left_child, right_child, prediction)
+                # binary_string = convert_to_binary(node, feature, threshold, left_child, right_child, prediction)
 
                 # Chuyển chuỗi nhị phân thành HEX
-                hex_string = hex(int(binary_string, 2))[2:].upper()
+                hex_string = convert_to_hex(node, feature, threshold, left_child, right_child, prediction)
 
                 # Ghi vào file .mif
                 miffile.write(f"    {node} : {hex_string};\n")
