@@ -22,7 +22,7 @@ def preprocess_data(df):
 
 def train_and_visualize():
     # Đọc dữ liệu
-    df = pd.read_csv("src/datasets_release/can-data-train-set-03.csv")
+    df = pd.read_csv("datasets_release/balanced_dataset.csv")
     
     # Tiền xử lý
     df = preprocess_data(df)
@@ -43,11 +43,11 @@ def train_and_visualize():
     
     # Huấn luyện mô hình
     model = RandomForestClassifier(
-        n_estimators=59,  # Tăng số cây để cải thiện hiệu suất
+        n_estimators=21,  # Tăng số cây để cải thiện hiệu suất
         min_samples_split=2,
         criterion='gini',
         random_state=42,
-        max_depth=None,  # Để cây phát triển tự nhiên
+        max_depth=9,  # Để cây phát triển tự nhiên
         max_features='sqrt',  # Tốt cho dữ liệu phân loại
         n_jobs=-1  # Sử dụng tất cả CPU
     )
@@ -55,8 +55,8 @@ def train_and_visualize():
     model.fit(X_train, y_train)
     
     # Lưu mô hình
-    joblib.dump(model, "src/datasets_release/can-data-train-set-03.pkl")
-    print("\nModel trained and saved as model_candata_train01.pkl")
+    joblib.dump(model, "datasets_release/can-data-w.pkl")
+    print("\nModel trained and saved as model can-data.pkl")
     
     # Đánh giá
     predictions = model.predict(X_test)

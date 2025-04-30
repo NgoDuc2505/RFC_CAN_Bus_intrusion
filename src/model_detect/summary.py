@@ -55,5 +55,5 @@ def summarize_forest(pkl_path, feature_names, output_csv="tree_summary.csv"):
 
 if __name__ == "__main__":
     feature_names = ["timestamp", "arbitration_id", "data_field"]
-    pkl_file = "src/datasets_release/model_candata_train_balance_set.pkl"
-    summarize_forest(pkl_file, feature_names, output_csv="src/datasets_release/tree_summary.csv")
+    pkl_file = "datasets_release/model_candata_train_balance_set_v2.pkl"
+    summarize_forest(pkl_file, feature_names, output_csv="datasets_release/tree_summary_v2.csv")
