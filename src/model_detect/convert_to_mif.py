@@ -1,41 +1,7 @@
 import csv
 
-# Hàm chuyển đổi một dòng CSV sang chuỗi nhị phân
-def convert_to_binary(node, feature, threshold, left_child, right_child, prediction):
-    # Chuyển Node (10 bit)
-    node_bin = format(node, '09b')
-
-    # Chuyển Feature (2 bit), nếu feature là -1 thì dùng '1111' [00 01 10 11]  
-    # [9bit Node][2 bit feature][64 bit threshold][9 bit left][9 bit right][2 bit prediction]
-    ## 
-    feature_bin = '11' if feature == '-1' else format(int(feature), '02b')
-
-    # Threshold (64 bit HEX)
-    threshold_bin = format(int(threshold, 16), '064b')
-
-    # Left Child (10 bit)
-    left_child_bin = format(left_child, '09b')
-
-    # Right Child (10 bit)
-    right_child_bin = format(right_child, '09b')
-
-    # Prediction (2 bit), nếu prediction là -1 thì dùng '11', nếu prediction là 1 thì dùng '01', còn lại là '00'
-    if prediction == '-1':
-        prediction_bin = '11'
-    elif prediction == '1':
-        prediction_bin = '01'
-    else:
-        prediction_bin = '00'
-
-    # hex_string_node = hex(int(node_bin, 2))[2:].upper();
-    #   hex_string_node = hex(int(node_bin, 2))[2:].upper();
-    #   hex_string_node = hex(int(node_bin, 2))[2:].upper();
-    #   hex_string_node = hex(int(node_bin, 2))[2:].upper();
-    #   hex_string_node = hex(int(node_bin, 2))[2:].upper();
-
-    # Kết hợp tất cả các phần lại với nhau
-    return node_bin + feature_bin + threshold_bin + left_child_bin + right_child_bin + prediction_bin
-
+#[9bit Node][2 bit feature][64 bit threshold][9 bit left][9 bit right][2 bit prediction]
+#[3hex Node][1 hex feature][16 hex threshold][3 hex left][3 hex right][1 hex prediction]
 def convert_to_hex(node, feature, threshold, left_child, right_child, prediction):
     # Chuyển Node (9 bit = 3 hex)
     node_bin = format(node, '09b')
@@ -67,6 +33,7 @@ def convert_to_hex(node, feature, threshold, left_child, right_child, prediction
     hex_prediction = format(int(prediction_bin, 2), '01X')
 
     # Ghép tất cả lại
+    
     return hex_node + hex_feature + hex_threshold + hex_left + hex_right + hex_prediction
 
 # Đọc dữ liệu từ file CSV và chuyển đổi

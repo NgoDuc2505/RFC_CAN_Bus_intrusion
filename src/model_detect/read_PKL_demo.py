@@ -86,7 +86,7 @@ class TreeExtractor:
             
             # Select and order columns
             columns = [
-                "Node", "Feature", 
+                 "Node", "Feature", 
                 "Threshold_Hex64", "Left_Child", 
                 "Right_Child", "Prediction"
             ]
