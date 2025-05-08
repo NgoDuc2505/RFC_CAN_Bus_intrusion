@@ -77,7 +77,7 @@ def vote_predictions(trees, input_data, verbose=False):
     return voted_prediction, prediction_counts
 
 if __name__ == "__main__":
-    trees = [f"src/LUT/tree_{i}.bin" for i in range(21)]
+    trees = [f"src/LUT/tree_{i}_v.bin" for i in range(21)]
     sample_input = {
         'timestamp': 1672531286.901432,
         'arbitration_id': '0C1',
