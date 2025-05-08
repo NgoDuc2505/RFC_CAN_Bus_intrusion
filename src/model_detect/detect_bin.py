@@ -1,196 +1,103 @@
-import os
-import struct
-import pandas as pd
+# detect_LUT_bin.py
+import pickle
 from collections import Counter
 
-# ====================== CẤU HÌNH ======================
-FEATURE_MAPPING = {
-    '00': "timestamp",
-    '01': 'arbitration_id',
-    '10': 'data_field',
+feature_index_to_name = {
+    0: 'timestamp',
+    1: 'arbitration_id',
+    10: 'data_field',
+    -1: 'none'
 }
 
-BIN_DIR = "src/LUT"
-NUM_TREES = 21
-# =======================================================
-
-# ================== CHUYỂN ĐỔI CSV -> BIN ==============
-def convert_csv_to_bin(csv_path, bin_path):
-    """Chuyển đổi file CSV cây quyết định sang binary format"""
-    df = pd.read_csv(csv_path)
-    df.columns = df.columns.str.strip()
-    len_packet = 0
-    with open(bin_path, 'wb') as f:
-        for _, row in df.iterrows():
-            # Xử lý các giá trị
-            node = int(row['Node'])
-            feature = int(float(row['Feature'])) if not pd.isna(row['Feature']) else -1
-            
-            # Xử lý threshold
-            threshold = float(row['Threshold']) if not pd.isna(row['Threshold']) else 0.0
-            
-            # Xử lý node con
-            left = int(float(row['Left_Child'])) if not pd.isna(row['Left_Child']) else 0
-            right = int(float(row['Right_Child'])) if not pd.isna(row['Right_Child']) else 0
-            
-            # Xử lý prediction (QUAN TRỌNG)
-            pred_raw = str(row['Prediction']).strip()
-            try:
-                prediction = int(float(pred_raw))  # Chuyển về số nguyên
-                if prediction == -1:
-                    pass  # Nút trong
-                elif prediction in (0, 1):
-                    pass  # Nút lá
-                else:
-                    raise ValueError(f"Giá trị prediction không hợp lệ: {pred_raw}")
-            except ValueError:
-                if pred_raw.upper() == 'FF':
-                    prediction = -1  # Coi 'FF' như -1
-                else:
-                    raise ValueError(f"Giá trị prediction không hợp lệ: {pred_raw}")
-
-            # Đóng gói dữ liệu (12 bytes/node)
-            packed = struct.pack(
-                '<HifHHb',  # Format: uint16, int32, float32, uint16, uint16
-                node,
-                feature,
-                threshold,
-                left,
-                right,
-                prediction
-            )
-            # Thêm prediction (1 byte) và padding (3 bytes)
-            packed += bytes(1) 
-            f.write(packed)
-            len_packet = len(packed)  # Lưu độ dài của gói dữ liệu
-
-    
-    print(f"✅ Đã chuyển đổi {csv_path} -> {bin_path}")
-    return len(df), (len_packet)
-
-def convert_all_csv_to_bin():
-    """Chuyển đổi tất cả các file CSV trong thư mục"""
-    with open(os.path.join(BIN_DIR, "tree_info.txt"), 'w') as f:
-        f.write("Binary tree format information:\n")
-        f.write("====================================\n")   
-        f.write("Total tree: " + str(NUM_TREES) + "\n")
-        for i in range(NUM_TREES):
-            csv_path = os.path.join(BIN_DIR, f"tree_{i}.csv")
-            bin_path = os.path.join(BIN_DIR, f"tree_{i}.bin")
-            if os.path.exists(csv_path):
-                df_len, pck_len = convert_csv_to_bin(csv_path, bin_path)
-                f.write(f"file: tree_{i}.bin includes {df_len} lines and each row is {pck_len} bytes\n")
-            else:
-                print(f"⚠️ File {csv_path} không tồn tại")
-# =======================================================
-
-# ================ ĐỌC VÀ DỰ ĐOÁN TỪ BIN ================
-def load_bin_tree(bin_path):
-    """Đọc cây nhị phân từ file với khung dữ liệu cố định 16 bytes/node"""
-    nodes = {}
+def load_tree_from_bin(bin_path):
     with open(bin_path, 'rb') as f:
-        while True:
-            data = f.read(16)
-            if not data or len(data) < 16:
-                break
+        tree_df = pickle.load(f)
+    return tree_df
 
-            # Giải mã 16 byte theo đúng định dạng
-            node_id, feature, threshold, left, right, prediction = struct.unpack('<HifHHb', data[:15])
-            
-            nodes[node_id] = {
-                'feature': feature,
-                'threshold': threshold,
-                'left': left,
-                'right': right,
-                'prediction': prediction
-            }
-    return nodes
-
-def predict_from_bin_tree(tree_nodes, input_data, verbose=False):
-    """Dự đoán từ một cây binary"""
-    current_node = 0  # Bắt đầu từ node gốc
-    
+def predict_from_tree(tree_df, input_data, verbose=False):
+    node = 0
     while True:
-        node = tree_nodes.get(current_node)
-        if not node:
+        matches = tree_df[tree_df['Node'] == node]
+        if matches.empty:
             if verbose:
-                print(f"❌ Node {current_node} không tồn tại")
+                print(f"❌ Node {node} không tồn tại.")
             return None
-        
-        # Nếu là nút lá (prediction khác -1)
-        if node['prediction'] != -1:
-            if verbose:
-                print(f"✅ Node {current_node}: Prediction = {node['prediction']}")
-            return node['prediction']
-        
-        # Lấy tên feature
-        feature_name = FEATURE_MAPPING.get(node['feature'], 'unknown')
-        feature_value = input_data.get(feature_name, float('nan'))
-        
-        if verbose:
-            comp = "<=" if feature_value <= node['threshold'] else "> "
-            print(f"🧠 Node {current_node}: {feature_name} ({feature_value:.5f}) {comp} {node['threshold']:.5f}")
-        
-        # Di chuyển đến node con
-        current_node = node['left'] if feature_value <= node['threshold'] else node['right']
+        row = matches.iloc[0]
+        is_leaf = row['Feature'] == -1
+        feature_name = None if is_leaf else feature_index_to_name.get(int(row['Feature']), None)
 
-def vote_predictions_bin(bin_trees, input_data, verbose=False):
-    """Dự đoán bằng voting từ nhiều cây binary"""
+        if is_leaf:
+            if verbose:
+                print(f"✅ Node {node} là node lá. Prediction = {row['Prediction']}")
+            return int(row['Prediction'])
+
+        threshold = float(row['Threshold'])
+        if feature_name is not None:
+            feature_value = input_data.get(feature_name)
+
+            # Ép kiểu nếu cần
+            try:
+                if feature_name == 'arbitration_id':
+                    if isinstance(feature_value, str):
+                        feature_value = int(feature_value, 16)
+
+                elif feature_name == 'timestamp':
+                    feature_value = float(feature_value)
+
+                elif feature_name == 'data_field':
+                    # Tùy logic, bạn có thể ép về int hoặc giữ nguyên string
+                    # ví dụ: int từ hex string:
+                    feature_value = int(feature_value, 16)
+
+            except Exception as e:
+                if verbose:
+                    print(f"❌ Lỗi khi ép kiểu feature '{feature_name}': {e}")
+                return None
+
+            if verbose:
+                print(f"🧠 Node {node}: {feature_name} ({feature_value}) "
+                      f"{'<= ' if feature_value <= threshold else '>  '} {threshold}")
+
+            if feature_value <= threshold:
+                node = int(row['Left_Child'])
+            else:
+                node = int(row['Right_Child'])
+
+
+def vote_predictions(trees, input_data, verbose=False):
     predictions = []
-    
-    for tree_path in bin_trees:
-        if verbose:
-            print(f"\n=> Đang xử lý {os.path.basename(tree_path)}")
-            
-        tree_nodes = load_bin_tree(tree_path)
-        pred = predict_from_bin_tree(tree_nodes, input_data, verbose)
-        
-        if pred is not None:
-            predictions.append(pred)
-        elif verbose:
-            print("⚠️ Bỏ qua cây do lỗi dự đoán")
-    
-    if not predictions:
-        return None, Counter()
-    
-    # Thực hiện voting
+    for tree_path in trees:
+        print(f"\n📁 Đang xử lý: {tree_path}")
+        tree_df = load_tree_from_bin(tree_path)
+        pred = predict_from_tree(tree_df, input_data, verbose=verbose)
+        predictions.append(pred)
+
     prediction_counts = Counter(predictions)
     voted_prediction = prediction_counts.most_common(1)[0][0]
-    
     return voted_prediction, prediction_counts
-# =======================================================
 
-# ====================== MAIN ===========================
 if __name__ == "__main__":
-    # Bước 1: Chuyển đổi tất cả CSV sang BIN (nếu cần)
-    # convert_all_csv_to_bin()
-    
-    # Bước 2: Chuẩn bị dữ liệu đầu vào
+    trees = [f"src/LUT/tree_{i}.bin" for i in range(21)]
+    sample_input = {
+        'timestamp': 1672531286.901432,
+        'arbitration_id': '0C1',
+        'data_field': "0000000000000000"
+    }
+
     sample_input_0 = {
         'timestamp': 1672531200, 'arbitration_id': '191', 'data_field': "8409A80D004108",
     }
-
-    sample_input_1 = {
-         'timestamp': 1672531286.901432, 'arbitration_id': '0C1', 'data_field': "0000000000000000",
+    sample_input_1_1_1 = {
+        'timestamp': '1672531398.7673929',
+        'arbitration_id': '3E9',
+        'data_field': "1B4C05111B511C69",
+    }
+    sample_input_1_1 = {
+        'timestamp': 1672531360.463805, 
+        'arbitration_id': '0C9', 
+        'data_field': "8416690D00000000",
     }
 
-
-    
-    # Bước 3: Tạo danh sách các file .bin
-    bin_trees = [os.path.join(BIN_DIR, f"tree_{i}.bin") for i in range(NUM_TREES)]
-    
-    # Bước 4: Thực hiện dự đoán
-    voted_pred, counts = vote_predictions_bin(bin_trees, sample_input_1, verbose=True)
-    
-    # Bước 5: Hiển thị kết quả
-    print("\n" + "="*50)
-    print(f"🧾 Kết quả dự đoán cuối cùng: {voted_pred} (0: Bình thường, 1: Tấn công)")
-    print(f"📊 Thống kê vote: {dict(counts)}")
-    print("="*50)
-
-
-#3.123 - 3.12344234234 3.1232423423 
-# làm lại prediction (đúng) 
-# 
-# 10
-#
+    voted_prediction, prediction_counts = vote_predictions(trees, sample_input_1_1, verbose=True)
+    print(f"\n🧾 Final Voted Prediction: {voted_prediction} (0: Normal, 1: Attack)")
+    print(f"Votes: {prediction_counts}")

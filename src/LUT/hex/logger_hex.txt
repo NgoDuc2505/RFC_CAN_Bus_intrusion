@@ -1,0 +1,22 @@
+Số bytes trên một dòng: 7 bytes 
+File: src/LUT/hex/tree_0.hex bao gồm 369 node.
+File: src/LUT/hex/tree_1.hex bao gồm 535 node.
+File: src/LUT/hex/tree_2.hex bao gồm 491 node.
+File: src/LUT/hex/tree_3.hex bao gồm 449 node.
+File: src/LUT/hex/tree_4.hex bao gồm 501 node.
+File: src/LUT/hex/tree_5.hex bao gồm 433 node.
+File: src/LUT/hex/tree_6.hex bao gồm 309 node.
+File: src/LUT/hex/tree_7.hex bao gồm 323 node.
+File: src/LUT/hex/tree_8.hex bao gồm 521 node.
+File: src/LUT/hex/tree_9.hex bao gồm 333 node.
+File: src/LUT/hex/tree_10.hex bao gồm 341 node.
+File: src/LUT/hex/tree_11.hex bao gồm 519 node.
+File: src/LUT/hex/tree_12.hex bao gồm 377 node.
+File: src/LUT/hex/tree_13.hex bao gồm 363 node.
+File: src/LUT/hex/tree_14.hex bao gồm 465 node.
+File: src/LUT/hex/tree_15.hex bao gồm 491 node.
+File: src/LUT/hex/tree_16.hex bao gồm 353 node.
+File: src/LUT/hex/tree_17.hex bao gồm 347 node.
+File: src/LUT/hex/tree_18.hex bao gồm 325 node.
+File: src/LUT/hex/tree_19.hex bao gồm 409 node.
+File: src/LUT/hex/tree_20.hex bao gồm 347 node.

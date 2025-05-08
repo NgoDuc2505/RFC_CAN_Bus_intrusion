@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 # Đường dẫn đến thư mục chứa các file CSV
-folder_path = 'src/datasets_release/set_03/train_01'
+folder_path = 'src/datasets_release/set_03/test_01_known_vehicle_known_attack'
 
 # Tạo list để chứa tất cả các DataFrame
 dfs = []

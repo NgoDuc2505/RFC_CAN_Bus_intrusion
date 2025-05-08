@@ -41,6 +41,61 @@ def extract_tree_info(tree, tree_id, feature_names, mode="mem"):
 
     return nodes
 
+def encode_lut_line(tree, node, feature, threshold, left, right, predict):
+    # Chuyển từng phần thành dạng phù hợp, scale lại nếu cần
+    threshold_int = int(threshold) if isinstance(threshold, float) else threshold
+    encoded = (tree << 56) | (node << 48) | (feature << 40) | (threshold_int << 24) | (left << 12) | (right << 0)
+    if predict != -1:
+        encoded |= (predict << 60)
+    return f"{encoded:016X}"
+
+    # with open("tree_weights.mif", "w") as f:
+    #     f.write("WIDTH=64;\nDEPTH=512;\nADDRESS_RADIX=UNS;\nDATA_RADIX=HEX;\nCONTENT BEGIN\n")
+    #     for i, row in enumerate(data_rows):
+    #         line = encode_lut_line(*row)
+    #         f.write(f"    {i} : {line};\n")
+    #     f.write("END;\n")
+
+def convert_lut_line_from_csv(dirLUT):
+    file_list = os.listdir(dirLUT)
+    csv_files = [f for f in file_list if f.endswith('.csv')]
+    for i, file in enumerate(csv_files):
+        file_path = os.path.join(dirLUT, file)
+        df = pd.read_csv(file_path)
+        print(f"Đang xử lý file {i + 1}/{len(csv_files)}: {file_path}")
+        data_rows = []
+        for index, row in df.iterrows():
+            data_rows.append((int(row["Tree"]), int(row["Node"]), int(row["Feature"]), float(row["Threshold"]),
+                              int(row["Left_Child"]), int(row["Right_Child"]), int(row["Prediction"])))
+
+        with open(f"src/MIF2/tree_{i}_weights.mif", "w") as f:
+            f.write("WIDTH=64;\nDEPTH=512;\nADDRESS_RADIX=UNS;\nDATA_RADIX=HEX;\nCONTENT BEGIN\n")
+            for i, row in enumerate(data_rows):
+                line = encode_lut_line(*row)
+                f.write(f"    {i} : {line};\n")
+            f.write("END;\n")
+
+def convert_lut_line_from_csv_total(dirLUT):
+    file_list = os.listdir(dirLUT)
+    csv_files = [f for f in file_list if f.endswith('.csv')]
+    output_name = "hex_total.mif"
+    data_rows = []
+    for i, file in enumerate(csv_files):
+        file_path = os.path.join(dirLUT, file)
+        df = pd.read_csv(file_path)
+        print(f"Đang xử lý file {i + 1}/{len(csv_files)}: {file_path}")
+        for index, row in df.iterrows():
+            data_rows.append((int(row["Tree"]), int(row["Node"]), int(row["Feature"]), float(row["Threshold"]),
+                              int(row["Left_Child"]), int(row["Right_Child"]), int(row["Prediction"])))
+
+    with open(f"src/MIF2/{output_name}", "w") as f:
+        f.write("WIDTH=64;\nDEPTH=512;\nADDRESS_RADIX=UNS;\nDATA_RADIX=HEX;\nCONTENT BEGIN\n")
+        for i, row in enumerate(data_rows):
+            line = encode_lut_line(*row)
+            f.write(f"    {i} : {line};\n")
+        f.write("END;\n")
+    print(f"✅ Đã lưu file {output_name} vào src/MIF/{output_name} bao gồm {len(data_rows)} dòng.")
+
 
 def convertNodeToMemFile(node_info: dict[str, any]) -> dict[str, any]:
     node_info["Tree"] = str(int(node_info['Tree']))
@@ -76,11 +131,34 @@ def convert_and_save_each_tree_as_csv(pkl_path, output_folder, feature_names, mo
         df.to_csv(out_path, index=False)
         print(f"✅ Đã lưu cây thứ {tree_id} vào {out_path}")
 
+def check_dir(inputDir: str):
+    isExist = not os.path.exists(inputDir) and not os.path.isdir(inputDir)
+    if isExist:
+        os.makedirs(inputDir)
+        print(f"📁 Folder created: {inputDir}")
+    else:
+        print(f"📁 Folder already exists: {inputDir}")
+    return isExist, inputDir
+
+def merge_bin(dirBIN: str, outputDir: str):
+    check_dir(outputDir)
+    bin_files = ([f for f in os.listdir(dirBIN) if f.endswith('.bin')])
+    output_file = os.path.join(outputDir, "bin_total.bin")
+    with open(output_file, 'wb') as outfile:
+        for file_name in bin_files:
+            file_path = os.path.join(dirBIN, file_name)
+            with open(file_path, 'rb') as infile:
+                data = infile.read()
+                outfile.write(data) 
+    print("✅ Gộp file thành công:", output_file)
 
 if __name__ == "__main__":
-    feature_names = ["timestamp", "arbitration_id", "data_field"]
+    # feature_names = ["timestamp", "arbitration_id", "data_field"]
     feature_names_mapping = ["00", "01", "10"]
     pkl_file = "src/model_release/model_candata_train_balance_set.pkl"
-    output_folder = "src/LUT/"
+    output_folder = "src/LUT2/"
 
-    convert_and_save_each_tree_as_csv(pkl_file, output_folder, feature_names_mapping, mode="mem")
+    # convert_and_save_each_tree_as_csv(pkl_file, output_folder, feature_names_mapping, mode="mem")
+    # convert_lut_line_from_csv("src/LUT2")
+    # convert_lut_line_from_csv_total("src/LUT2")
+    # merge_bin("src/LUT2", "src/LUT2")
