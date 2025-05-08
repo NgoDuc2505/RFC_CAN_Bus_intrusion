@@ -32,13 +32,13 @@ def convert_to_hex(node, feature, threshold, left_child, right_child, prediction
         prediction_bin = '00'
     hex_prediction = format(int(prediction_bin, 2), '01X')
 
-    # Ghép tất cả lại
-    
     return hex_node + hex_feature + hex_threshold + hex_left + hex_right + hex_prediction
 
 # Đọc dữ liệu từ file CSV và chuyển đổi
-def convert_csv_to_mif(tree_id, output_mif):
-    input_csv = f"LUT/tree_{tree_id}_v.csv"  # Đường dẫn file CSV động
+def convert_csv_to_mif(output_mif):
+   # input_csv = f"LUT/tree_{tree_id}_v.csv"  # Đường dẫn file CSV động
+    input_csv = f"datasets_release/set_03/sample_1.csv"  # Đường dẫn file CSV động
+
 
     # Đọc CSV
     with open(input_csv, mode='r') as csvfile:
@@ -47,11 +47,11 @@ def convert_csv_to_mif(tree_id, output_mif):
 
         # Mở file .mif để ghi
         with open(output_mif, mode='w') as miffile:
-            miffile.write("WIDTH=96;\n")  # Sửa WIDTH thành 96 để phù hợp với 96 bit
-            miffile.write("DEPTH=512;\n")
-            miffile.write("ADDRESS_RADIX=UNS;\n")
-            miffile.write("DATA_RADIX=BIN;\n")  # Sử dụng dữ liệu nhị phân trong MIF
-            miffile.write("CONTENT BEGIN\n")
+            # miffile.write("WIDTH=96;\n")  # Sửa WIDTH thành 96 để phù hợp với 96 bit
+            # miffile.write("DEPTH=512;\n")
+            # miffile.write("ADDRESS_RADIX=UNS;\n")
+            # miffile.write("DATA_RADIX=BIN;\n")  # Sử dụng dữ liệu nhị phân trong MIF
+            # miffile.write("CONTENT BEGIN\n")
 
             # Duyệt qua từng dòng CSV và chuyển đổi
             for row in csvreader:
@@ -69,12 +69,12 @@ def convert_csv_to_mif(tree_id, output_mif):
                 hex_string = convert_to_hex(node, feature, threshold, left_child, right_child, prediction)
 
                 # Ghi vào file .mif
-                miffile.write(f"    {node} : {hex_string};\n")
-
-            miffile.write("END;\n")
+                # miffile.write(f"    {node} : {hex_string};\n")
+                miffile.write(f"{hex_string}\n")
+            # miffile.write("END;\n")
 
 # Duyệt qua tất cả các tree_id từ 0 đến 20 và chuyển đổi
-for tree_id in range(21):  # tree_id từ 0 đến 20
-    output_mif = f"LUT/tree_{tree_id}_output.mif"  # Đặt tên file .mif xuất ra
-    convert_csv_to_mif(tree_id, output_mif)
-    print(f"Chuyển đổi tree_{tree_id}_v.csv thành {output_mif} hoàn tất!")
+ 
+    output_mif = f"datasets_release/set_03/sample_1.mif"  
+    convert_csv_to_mif( output_mif)
+    print(f"Chuyển đổi tree__v.csv thành {output_mif} hoàn tất!")
