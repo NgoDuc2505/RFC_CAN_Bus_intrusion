@@ -1,68 +1,106 @@
 import pandas as pd
 from collections import Counter
+import struct
 
 # Ánh xạ chỉ số feature sang tên cột
 feature_index_to_name = {
     0: 'timestamp',
     1: 'arbitration_id',
     10: 'data_field',
-    -1: 'none'
+    11: 'none'
 }
+
+# Chuyển từ chuỗi nhị phân 64 bit thành số float
+def bin_to_float64(bin_str):
+    int_val = int(bin_str, 2)
+    return struct.unpack('>d', int_val.to_bytes(8, byteorder='big'))[0]
+
+# Đọc cây quyết định từ file .mif
+# Đọc cây quyết định từ file .mif
 def load_tree_from_mif(mif_path):
-    tree_data = []
-    with open(mif_path, mode='r') as miffile:
-        for line in miffile:
-            line = line.strip()  # Loại bỏ khoảng trắng thừa
-            if line:
-                try:
-                    # Đọc các phần tử từ dòng nhị phân theo đúng số bit đã cho:
-                    node = int(line[0:9], 2)  # 9 bit cho Node
-                    feature = int(line[9:11], 2)  # 2 bit cho Feature
-                    threshold = int(line[11:75], 2)  # 64 bit cho Threshold
-                    left_child = int(line[75:84], 2)  # 9 bit cho Left Child
-                    right_child = int(line[84:93], 2)  # 9 bit cho Right Child
-                    prediction = int(line[93:95], 2)  # 2 bit cho Prediction
-                    
-                    # Thêm dữ liệu vào danh sách
-                    tree_data.append({
-                        'Node': node,
-                        'Feature': feature,
-                        'Threshold': threshold,
-                        'Left_Child': left_child,
-                        'Right_Child': right_child,
-                        'Prediction': prediction
-                    })
-                except Exception as e:
-                    print(f"❌ Lỗi khi phân tích cú pháp dòng: {line} -> {e}")
-                    continue  # Bỏ qua dòng bị lỗi và tiếp tục xử lý các dòng khác
+    records = []
+    with open(mif_path, 'r') as f:
+        lines = f.readlines()
+        for line in lines:
+            line = line.strip()
+            if not line or len(line) < 95:
+                continue
 
-    # Tạo DataFrame từ dữ liệu đã đọc
-    tree_df = pd.DataFrame(tree_data)
-    
-    # In ra các cột và phần tử để kiểm tra
-    print(f"✅ Đã tải dữ liệu từ {mif_path}. Các cột: {tree_df.columns}")
-    print(tree_df.head())  # In ra 5 dòng đầu tiên để kiểm tra dữ liệu
-    return tree_df
+            node = int(line[0:9], 2)  # Đọc node
+            feature_bin = line[9:11]  # Đọc feature (2 bit)
+            feature = -1 if feature_bin == '11' else int(feature_bin, 2)  # Feature = 11 -> lá, không cần trỏ tới trái/phải
+
+            threshold_bin = line[11:75]  # Đọc threshold (64 bit)
+            threshold = bin_to_float64(threshold_bin)
+
+            left_child = int(line[75:84], 2)  # Đọc left child
+            right_child = int(line[84:93], 2)  # Đọc right child
+
+            prediction_bin = line[93:95]  # Đọc phần prediction (2 bit)
+            if prediction_bin == '11':
+                prediction = -1
+            elif prediction_bin == '01':
+                prediction = 1
+            else:
+                prediction = 0
+
+            # Nếu feature = 11, thì không cần trỏ tới Left/Right mà trả về trực tiếp Prediction
+            records.append({
+                'Node': node,
+                'Feature': feature,
+                'Threshold': threshold,
+                'Left_Child': left_child,
+                'Right_Child': right_child,
+                'Prediction': prediction
+            })
+
+    return pd.DataFrame(records)
 
 
+# Dự đoán từ cây
+# Dự đoán từ cây
+# Dự đoán từ cây
 def predict_from_tree(tree_df, input_data, verbose=False):
     node = 0
+    visited_nodes = set()  # Set để lưu các node đã duyệt
+    path = []  # Lưu trữ đường đi của các node đã duyệt
+
     while True:
+        if node in visited_nodes:
+            # Lỗi vòng lặp vô hạn
+            if verbose:
+                print(f"❌ Vòng lặp vô hạn phát hiện: đã ghé node {node} trước đó.")
+                print("🔍 Đường đi trước khi lỗi xảy ra:")
+                for n in path:
+                    print(f"  - Node {n}")
+            return None
+        visited_nodes.add(node)
+        path.append(node)
+
         matches = tree_df[tree_df['Node'] == node]
         if matches.empty:
             if verbose:
                 print(f"❌ Node {node} không tồn tại.")
             return None
         row = matches.iloc[0]
-        is_leaf = pd.isna(row['Feature']) or row['Feature'] == -1
-        feature_name = None if is_leaf else feature_index_to_name.get(int(row['Feature']), None)
+        feature = row['Feature']
+
+        # Nếu feature = 11, trả về prediction ngay mà không cần kiểm tra con trái hay phải
+        if feature == 11:
+            prediction = row['Prediction']
+            if verbose:
+                print(f"✅ Node {node} là node lá với Feature = 11. Prediction = {prediction}")
+            return int(prediction)
+
+        is_leaf = feature == -1
+        feature_name = None if is_leaf else feature_index_to_name.get(int(feature), None)
 
         if is_leaf:
             if verbose:
                 print(f"✅ Node {node} là node lá. Prediction = {row['Prediction']}")
             return int(row['Prediction'])
 
-        threshold = row['Threshold']
+        threshold = float(row['Threshold'])
         if feature_name is not None:
             feature_value = input_data.get(feature_name)
 
@@ -88,46 +126,35 @@ def predict_from_tree(tree_df, input_data, verbose=False):
                       f"{'<= ' if feature_value <= threshold else '>  '} {threshold}")
 
             if feature_value <= threshold:
-                node = row['Left_Child']
+                node = int(row['Left_Child'])
             else:
-                node = row['Right_Child']
+                node = int(row['Right_Child'])
 
+
+
+# Bỏ phiếu giữa các cây
 def vote_predictions(trees, input_data, verbose=False):
     predictions = []
     for tree_path in trees:
         print(f"\n📁 Đang xử lý: {tree_path}")
         tree_df = load_tree_from_mif(tree_path)
         pred = predict_from_tree(tree_df, input_data, verbose=verbose)
-        if pred is not None:
-            predictions.append(pred)
-        else:
-            print(f"❌ Không thể dự đoán với cây {tree_path}")
-    
-    if not predictions:
-        print("❌ Không có dự đoán nào được trả về.")
-        return None, None
-    
+        predictions.append(pred)
+
     prediction_counts = Counter(predictions)
     voted_prediction = prediction_counts.most_common(1)[0][0]
     return voted_prediction, prediction_counts
 
+# Main test
 if __name__ == "__main__":
-    trees = [f"LUT/tree_{i}_output.mif" for i in range(21)]  # Các file .mif đã tạo từ phần trước
+    trees = [f"LUT/tree_{i}_output.mif" for i in range(21)]
     sample_input = {
         'timestamp': 1672531286.901432,
-        'arbitration_id': '0C1',
-        'data_field': "0000000000000000"
+        'arbitration_id': '0C1',  # Giá trị hex ví dụ
+        'data_field': "0000000000000000"  # Giá trị hex ví dụ
     }
 
-    sample_input_0 = {
-        'timestamp': 1672531398.7673929, 'arbitration_id': '3E9', 'data_field': "1B4C05111B511C69",
-    }
-
-    # Thử với dữ liệu đầu vào mẫu
     voted_prediction, prediction_counts = vote_predictions(trees, sample_input, verbose=True)
-    if voted_prediction is not None:
-        print(f"\n🧾 Final Voted Prediction: {voted_prediction} (0: Normal, 1: Attack)")
-        print(f"Votes: {prediction_counts}")
-        print(f"Total Trees: {len(trees)}")
-    else:
-        print("❌ Không thể đưa ra dự đoán.")
+    print(f"\n🧾 Final Voted Prediction: {voted_prediction} (0: Normal, 1: Attack)")
+    print(f"Votes: {prediction_counts}")
+    print(f"Total Trees: {len(trees)}")

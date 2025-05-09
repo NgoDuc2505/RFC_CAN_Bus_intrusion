@@ -37,7 +37,7 @@ def convert_to_hex(node, feature, threshold, left_child, right_child, prediction
     node_bin = format(node, '09b')
 
     # Feature (2 bit = 1 hex)
-    feature_bin = '11' if feature == '-1' else format(int(feature), '02b')[-2:]
+    feature_bin = '11' if feature == '-1' else format(int(feature), '02b')
 
 
     # Threshold (64 bit = 16 hex)
@@ -59,7 +59,7 @@ def convert_to_hex(node, feature, threshold, left_child, right_child, prediction
 
     # Chuyển tất cả các phần tử nhị phân sang hexadecimal
 
-    return node_bin+ feature_bin + threshold_bin + left_bin + right_bin+ prediction_bin
+    return node_bin + feature_bin + threshold_bin + left_bin + right_bin + prediction_bin
 
 
 # Đọc dữ liệu từ file CSV và chuyển đổi

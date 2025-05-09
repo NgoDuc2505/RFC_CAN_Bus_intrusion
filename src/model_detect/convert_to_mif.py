@@ -8,7 +8,11 @@ def convert_to_hex(node, feature, threshold, left_child, right_child, prediction
     # hex_node = format(int(node_bin, 2), '03X')
 
     # Feature (2 bit = 1 hex)
-    feature_bin = '11' if feature == '-1' else format(int(feature), '02b')
+    if feature == '-1':
+        feature_bin = '11'  # Đặc biệt cho trường hợp feature == -1
+    elif feature in ['00', '01', '10']:
+        feature_bin = feature  # Nếu feature đã là '00', '01', '10', hoặc '11', thì giữ nguyên
+    
     # hex_feature = format(int(feature_bin, 2), '01X')
 
     # Threshold (64 bit = 16 hex)
@@ -37,10 +41,11 @@ def convert_to_hex(node, feature, threshold, left_child, right_child, prediction
         prediction_bin = '01'
     else:
         prediction_bin = '00'
-    hex_prediction = format(int(prediction_bin, 2), '01X')
+    # hex_prediction = format(int(prediction_bin, 2), '01X')
 
     # return hex_node + hex_feature + hex_threshold + hex_left + hex_right + hex_prediction
-    return node_bin + feature_bin + threshold_bin + left_bin + right_bin + prediction_bin
+    # return node_bin + feature_bin + threshold_bin + left_bin + right_bin + prediction_bin
+    return node_bin+"/" + feature_bin+"/" + threshold_bin+"/" + left_bin+"/" + right_bin+"/" + prediction_bin
 
 # Đọc dữ liệu từ file CSV và chuyển đổi
 def convert_csv_to_mif(tree_id, output_mif):
