@@ -3,13 +3,13 @@ import joblib
 import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
 
-model_loaded = joblib.load("src/datasets_release/random_forest_model.pkl")
+model_loaded = joblib.load("src/model_release/model_candata_train_balance_set.pkl")
 print(type(model_loaded))
 num_trees = len(model_loaded.estimators_)
 print(f"Số lượng cây trong Random Forest: {num_trees}")
-tree = model_loaded.estimators_[14]
-tree_text = export_text(tree)
-print(tree_text)
+# tree = model_loaded.estimators_[14]
+# tree_text = export_text(tree)
+# print(tree_text)
 
 def plot_decision_tree(model, tree_index=0):
     """ Vẽ cây quyết định từ Random Forest """

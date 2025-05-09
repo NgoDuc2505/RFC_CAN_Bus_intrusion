@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 # Đường dẫn đến thư mục chứa các file CSV
-folder_path = 'src/datasets_release/set_03/test_01_known_vehicle_known_attack'
+folder_path = 'src/model_tree_latest'
 
 # Tạo list để chứa tất cả các DataFrame
 dfs = []
@@ -19,6 +19,6 @@ for filename in os.listdir(folder_path):
 merged_df = pd.concat(dfs, ignore_index=True)
 
 # Lưu thành file CSV mới
-merged_df.to_csv('src/datasets_release/can-data-train-set-03.csv', index=False)
+merged_df.to_csv('src/datasets_release/set_03/sample_1.csv', index=False)
 
 print(f"Đã gộp {len(dfs)} file CSV thành can-data-set-03.csv")

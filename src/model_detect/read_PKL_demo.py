@@ -149,4 +149,4 @@ if __name__ == "__main__":
     pkl_file = "src/model_release/model_candata_train_balance_set.pkl"
     output_folder = "src/LUT/"
 
-    convert_and_save_each_tree_as_csv(pkl_file, output_folder, feature_names_mapping, mode="mem")
+    # convert_and_save_each_tree_as_csv(pkl_file, output_folder, feature_names_mapping, mode="mem")

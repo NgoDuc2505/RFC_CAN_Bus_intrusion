@@ -12,7 +12,7 @@ def predict(model, input_data):
     return prediction[0], probability[0]
 
 if __name__ == "__main__":
-    model_path = "random_forest_model_v2.pkl"
+    model_path = "src/model_release/model_candata_train_balance_set.pkl"
     model = load_model(model_path)
     
     sample_input = {

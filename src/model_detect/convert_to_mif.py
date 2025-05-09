@@ -1,4 +1,5 @@
 import csv
+import os
 
 #[9bit Node][2 bit feature][64 bit threshold][9 bit left][9 bit right][2 bit prediction]
 #[3hex Node][1 hex feature][16 hex threshold][3 hex left][3 hex right][1 hex prediction]
@@ -8,7 +9,7 @@ def convert_to_hex(node, feature, threshold, left_child, right_child, prediction
     hex_node = format(int(node_bin, 2), '03X')
 
     # Feature (2 bit = 1 hex)
-    feature_bin = '11' if feature == '-1' else format(int(feature), '02b')
+    feature_bin = '11' if feature == '-1' else format(int(feature), '02b')[-2:]
     hex_feature = format(int(feature_bin, 2), '01X')
 
     # Threshold (64 bit = 16 hex)
@@ -30,15 +31,22 @@ def convert_to_hex(node, feature, threshold, left_child, right_child, prediction
         prediction_bin = '01'
     else:
         prediction_bin = '00'
-    hex_prediction = format(int(prediction_bin, 2), '01X')
+    # hex_prediction = format(int(prediction_bin, 2), '01X')
 
-    return hex_node + hex_feature + hex_threshold + hex_left + hex_right + hex_prediction
+    return node_bin + feature_bin + threshold_bin + left_bin + right_bin + prediction_bin
 
 # Đọc dữ liệu từ file CSV và chuyển đổi
 def convert_csv_to_mif(output_mif):
    # input_csv = f"LUT/tree_{tree_id}_v.csv"  # Đường dẫn file CSV động
-    input_csv = f"datasets_release/set_03/sample_1.csv"  # Đường dẫn file CSV động
+    input_csv = f"src/datasets_release/set_03/sample_1.csv"  # Đường dẫn file CSV động
 
+    
+    if not os.path.exists(output_mif):
+        with open(output_mif, "w") as f:
+            f.write("")  # hoặc ghi nội dung mặc định
+        print(f"File '{output_mif}' đã được tạo.")
+    else:
+        print(f"File '{output_mif}' đã tồn tại.")
 
     # Đọc CSV
     with open(input_csv, mode='r') as csvfile:
@@ -75,6 +83,6 @@ def convert_csv_to_mif(output_mif):
 
 # Duyệt qua tất cả các tree_id từ 0 đến 20 và chuyển đổi
  
-    output_mif = f"datasets_release/set_03/sample_1.mif"  
-    convert_csv_to_mif( output_mif)
-    print(f"Chuyển đổi tree__v.csv thành {output_mif} hoàn tất!")
+output_mif = f"src/datasets_release/set_03/sample_1.mif"  
+convert_csv_to_mif(output_mif)
+print(f"Chuyển đổi tree__v.csv thành {output_mif} hoàn tất!")
