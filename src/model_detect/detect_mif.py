@@ -98,11 +98,21 @@ def vote_predictions_mif(trees, input_data, verbose=False):
     return voted, counts
 
 if __name__ == "__main__":
-    trees = [f"LUT/tree_{i}_v.mif" for i in range(21)]
+    trees = [f"src/LUT/tree_{i}_v.mif" for i in range(21)]
     sample_input = {
  'timestamp': 1672531251.000602, 'arbitration_id': '0AA', 'data_field': "0000000000000000",
     }
 
-    voted_pred, pred_counts = vote_predictions_mif(trees, sample_input, verbose=True)
+    sample_input_1= {
+    'timestamp': 1672531286.901432,
+    'arbitration_id': '0C1',
+    'data_field': "0000000000000000"
+    }
+
+    sample_input_0 = {
+    'timestamp': 1672531398.7673929, 'arbitration_id': '3E9', 'data_field': "1B4C05111B511C69",
+    }
+
+    voted_pred, pred_counts = vote_predictions_mif(trees, sample_input_0, verbose=True)
     print(f"\n🧾 Final Voted Prediction: {voted_pred} (0: Normal, 1: Attack)")
     print(f"Votes: {pred_counts}")
