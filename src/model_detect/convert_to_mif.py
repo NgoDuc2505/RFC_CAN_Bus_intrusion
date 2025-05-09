@@ -58,6 +58,7 @@ def convert_csv_to_mif(output_mif):
         print(f"File '{output_mif}' đã được tạo.")
     else:
         print(f"File '{output_mif}' đã tồn tại.")
+        
 def convert_csv_to_mif(tree_id, output_mif):
     input_csv = f"LUT/tree_{tree_id}_v.csv"  # Đường dẫn file CSV động
 

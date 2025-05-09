@@ -1,3 +1,5 @@
+import os
+import glob
 import pandas as pd
 from collections import Counter
 
@@ -8,22 +10,21 @@ feature_index_to_name = {
     10: 'data_field',
     -1: 'none'
 }
+
 def load_tree_from_mif(mif_path):
     tree_data = []
     with open(mif_path, mode='r') as miffile:
         for line in miffile:
-            line = line.strip()  # Loại bỏ khoảng trắng thừa
+            line = line.strip()
             if line:
                 try:
-                    # Đọc các phần tử từ dòng nhị phân theo đúng số bit đã cho:
-                    node = int(line[0:9], 2)  # 9 bit cho Node
-                    feature = int(line[9:11], 2)  # 2 bit cho Feature
-                    threshold = int(line[11:75], 2)  # 64 bit cho Threshold
-                    left_child = int(line[75:84], 2)  # 9 bit cho Left Child
-                    right_child = int(line[84:93], 2)  # 9 bit cho Right Child
-                    prediction = int(line[93:95], 2)  # 2 bit cho Prediction
+                    node = int(line[0:9], 2)
+                    feature = int(line[9:11], 2)
+                    threshold = int(line[11:75], 2)
+                    left_child = int(line[75:84], 2)
+                    right_child = int(line[84:93], 2)
+                    prediction = int(line[93:95], 2)
                     
-                    # Thêm dữ liệu vào danh sách
                     tree_data.append({
                         'Node': node,
                         'Feature': feature,
@@ -33,17 +34,11 @@ def load_tree_from_mif(mif_path):
                         'Prediction': prediction
                     })
                 except Exception as e:
-                    print(f"❌ Lỗi khi phân tích cú pháp dòng: {line} -> {e}")
-                    continue  # Bỏ qua dòng bị lỗi và tiếp tục xử lý các dòng khác
+                    print(f"❌ Lỗi khi phân tích dòng: {line} -> {e}")
+                    continue
 
-    # Tạo DataFrame từ dữ liệu đã đọc
     tree_df = pd.DataFrame(tree_data)
-    
-    # In ra các cột và phần tử để kiểm tra
-    print(f"✅ Đã tải dữ liệu từ {mif_path}. Các cột: {tree_df.columns}")
-    print(tree_df.head())  # In ra 5 dòng đầu tiên để kiểm tra dữ liệu
     return tree_df
-
 
 def predict_from_tree(tree_df, input_data, verbose=False):
     node = 0
@@ -66,15 +61,12 @@ def predict_from_tree(tree_df, input_data, verbose=False):
         if feature_name is not None:
             feature_value = input_data.get(feature_name)
 
-            # Ép kiểu nếu cần
             try:
                 if feature_name == 'arbitration_id':
                     if isinstance(feature_value, str):
                         feature_value = int(feature_value, 16)
-
                 elif feature_name == 'timestamp':
                     feature_value = float(feature_value)
-
                 elif feature_name == 'data_field':
                     feature_value = int(feature_value, 16)
 
@@ -92,9 +84,9 @@ def predict_from_tree(tree_df, input_data, verbose=False):
             else:
                 node = row['Right_Child']
 
-def vote_predictions(trees, input_data, verbose=False):
+def vote_predictions(tree_paths, input_data, verbose=False):
     predictions = []
-    for tree_path in trees:
+    for tree_path in tree_paths:
         print(f"\n📁 Đang xử lý: {tree_path}")
         tree_df = load_tree_from_mif(tree_path)
         pred = predict_from_tree(tree_df, input_data, verbose=verbose)
@@ -112,22 +104,26 @@ def vote_predictions(trees, input_data, verbose=False):
     return voted_prediction, prediction_counts
 
 if __name__ == "__main__":
-    trees = [f"LUT/tree_{i}_output.mif" for i in range(21)]  # Các file .mif đã tạo từ phần trước
-    sample_input = {
-        'timestamp': 1672531286.901432,
-        'arbitration_id': '0C1',
-        'data_field': "0000000000000000"
-    }
+    # Duyệt tất cả file tree*.mif trong thư mục src/LUT/
+    tree_folder = "src/LUT"
+    tree_paths = sorted(glob.glob(os.path.join(tree_folder, "tree*.mif")))
 
-    sample_input_0 = {
-        'timestamp': 1672531398.7673929, 'arbitration_id': '3E9', 'data_field': "1B4C05111B511C69",
-    }
-
-    # Thử với dữ liệu đầu vào mẫu
-    voted_prediction, prediction_counts = vote_predictions(trees, sample_input, verbose=True)
-    if voted_prediction is not None:
-        print(f"\n🧾 Final Voted Prediction: {voted_prediction} (0: Normal, 1: Attack)")
-        print(f"Votes: {prediction_counts}")
-        print(f"Total Trees: {len(trees)}")
+    if not tree_paths:
+        print("❌ Không tìm thấy file .mif nào trong thư mục.")
     else:
-        print("❌ Không thể đưa ra dự đoán.")
+        print(f"✅ Đã tìm thấy {len(tree_paths)} cây quyết định.")
+
+        sample_input = {
+            'timestamp': 1672531286.901432,
+            'arbitration_id': '0C1',
+            'data_field': "0000000000000000"
+        }
+
+        # Có thể thử nhiều bộ test khác nhau
+        voted_prediction, prediction_counts = vote_predictions(tree_paths, sample_input, verbose=True)
+        if voted_prediction is not None:
+            print(f"\n🧾 Final Voted Prediction: {voted_prediction} (0: Normal, 1: Attack)")
+            print(f"Votes: {prediction_counts}")
+            print(f"Total Trees: {len(tree_paths)}")
+        else:
+            print("❌ Không thể đưa ra dự đoán.")
