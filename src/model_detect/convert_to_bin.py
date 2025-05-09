@@ -59,7 +59,7 @@ def convert_to_hex(node, feature, threshold, left_child, right_child, prediction
 
     # Chuyển tất cả các phần tử nhị phân sang hexadecimal
 
-    return node_bin+ feature_bin + threshold_bin + left_bin + right_bin+ prediction_bin
+    return node_bin+"/" + feature_bin+"/" + threshold_bin +"/"+ left_bin+"/" + right_bin+"/" + prediction_bin
 
 
 # Đọc dữ liệu từ file CSV và chuyển đổi
