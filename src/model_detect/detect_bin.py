@@ -85,9 +85,19 @@ if __name__ == "__main__":
     }
 
     sample_input_0 = {
-        'timestamp':  1672531470.273081, 'arbitration_id': '3E9', 'data_field': "1B4C05111B511C69",
+        'timestamp': 1672531200, 'arbitration_id': '191', 'data_field': "8409A80D004108",
+    }
+    sample_input_1_1_1 = {
+        'timestamp': '1672531398.7673929',
+        'arbitration_id': '3E9',
+        'data_field': "1B4C05111B511C69",
+    }
+    sample_input_1_1 = {
+        'timestamp': 1672531360.463805, 
+        'arbitration_id': '0C9', 
+        'data_field': "8416690D00000000",
     }
 
-    voted_prediction, prediction_counts = vote_predictions(trees, sample_input_0, verbose=True)
+    voted_prediction, prediction_counts = vote_predictions(trees, sample_input_1_1, verbose=True)
     print(f"\n🧾 Final Voted Prediction: {voted_prediction} (0: Normal, 1: Attack)")
     print(f"Votes: {prediction_counts}")

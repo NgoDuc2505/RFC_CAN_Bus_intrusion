@@ -48,11 +48,11 @@ def main(csv_file):
     df = load_data(csv_file)
     
     # Xác định cột nhãn (label)
-    X = df.drop(columns=["label"], errors='ignore')
-    y = df["label"] if "label" in df.columns else None
+    X = df.drop(columns=["attack"], errors='ignore')
+    y = df["attack"] if "attack" in df.columns else None
     
     if y is None:
-        raise ValueError("Dataset không chứa cột 'label'. Kiểm tra lại file CSV.")
+        raise ValueError("Dataset không chứa cột 'attack'. Kiểm tra lại file CSV.")
     
     # Chia tập train/test
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
