@@ -79,15 +79,15 @@ def vote_predictions(trees, input_data, verbose=False):
 if __name__ == "__main__":
     trees = [f"LUT/tree_{i}_v.csv" for i in range(21)]
     sample_input = {
-        'timestamp': 1672531286.901432,
-        'arbitration_id': '0C1',
-        'data_field': "0000000000000000"
+       'timestamp':      1672531200.00113,
+        'arbitration_id': '1CC',
+        'data_field':     '2068004000'
     }
 
     sample_input_0 = {
-        'timestamp': 1672531398.7673929, 'arbitration_id': '3E9', 'data_field': "1B4C05111B511C69",
+        'timestamp': 1672531251.000602, 'arbitration_id': '0AA', 'data_field': "0000000000000000",
     }
-    voted_prediction, prediction_counts = vote_predictions(trees, sample_input, verbose=True)
+    voted_prediction, prediction_counts = vote_predictions(trees, sample_input_0, verbose=True)
     print(f"\n🧾 Final Voted Prediction: {voted_prediction} (0: Normal, 1: Attack)")
     print(f"Votes: {prediction_counts}")
     print(f"Total Trees: {len(trees)}")
