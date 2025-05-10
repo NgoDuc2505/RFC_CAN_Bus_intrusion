@@ -1,5 +1,6 @@
 import os
 import math
+from typing import Dict
 
 def parse_mif_line(line):
     bits = line.strip().replace(' ', '')
@@ -57,19 +58,58 @@ def extract_features(sample):
         2: length
     }
 
-def run_tree_prediction(tree_dict, sample_features):
-    current_node_id = 0
+def run_tree_prediction(tree_dict: Dict[int, Dict[str, int]],
+                        sample_features: Dict[int, int]) -> int:
+    """
+    Traverse a decision tree to predict the output for given sample features.
+
+    Args:
+        tree_dict: Mapping of node IDs to node attributes:
+            - 'feature_id': index of the feature to test
+            - 'threshold': threshold value for the feature
+            - 'left': ID of the left child node (0 if leaf)
+            - 'right': ID of the right child node (0 if leaf)
+            - 'prediction': prediction value at leaf nodes
+        sample_features: Mapping of feature IDs to their values.
+
+    Returns:
+        The prediction at the reached leaf node.
+
+    Raises:
+        KeyError: If a node or feature is missing in the inputs.
+        RuntimeError: If tree traversal exceeds the maximum expected depth.
+    """
+    node_id = 0
+    max_depth = len(tree_dict)
+    depth = 0
     while True:
-        node = tree_dict.get(current_node_id)
-        if node is None:
-            raise Exception(f"Không tìm thấy node {current_node_id}")
-        if node['left'] == 0 and node['right'] == 0:
+        if depth > max_depth:
+            raise RuntimeError("Exceeded maximum tree depth; possible cycle in tree.")
+        depth += 1
+        try:
+            node = tree_dict[node_id]
+        except KeyError:
+            raise KeyError(f"Node ID {node_id} not found in tree.")
+
+        left_child = node['left']
+        right_child = node['right']
+
+        # If this is a leaf node, return its prediction
+        if left_child == 0 and right_child == 0:
             return node['prediction']
-        feature_value = sample_features.get(node['feature_id'], 0)
-        if feature_value < node['threshold']:
-            current_node_id = node['left']
+
+        feature_id = node['feature_id']
+        threshold = node['threshold']
+
+        if feature_id not in sample_features:
+            raise KeyError(f"Feature ID {feature_id} missing in sample features.")
+        feature_value = sample_features[feature_id]
+
+        # Decide which branch to follow
+        if feature_value < threshold:
+            node_id = left_child
         else:
-            current_node_id = node['right']
+            node_id = right_child
 
 def run_forest_prediction(folder_path, sample_input):
     features = extract_features(sample_input)
