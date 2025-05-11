@@ -38,13 +38,65 @@ def load_tree_from_mif(mif_path):
     rows = [parse_binary_row_95bit(line) for line in data_lines]
     return rows
 
+# def predict_from_parsed_tree(tree_rows, input_data, verbose=False):
+#     node = 0
+#     # Chuẩn bị chuỗi nhị phân đầu vào
+#     # input_bin = {
+#     #     'timestamp':      format(int(float(input_data['timestamp'])), '064b'),
+#     #     'arbitration_id': format(int(input_data['arbitration_id'], 16), '064b'),
+#     #     'data_field':     format(int(input_data['data_field'], 16), '064b')
+#     # }
+#     input_bin = {
+#         'timestamp':      input_data['timestamp'],
+#         'arbitration_id': input_data['arbitration_id'],
+#         'data_field':     input_data['data_field']
+#     }
+
+#     while True:
+#         current = next((row for row in tree_rows if row['Node'] == node), None)
+#         if current is None:
+#             print(f"❌ Node {node} không tồn tại.")
+#             return None
+
+#         # Nếu là leaf node
+#         if current['Feature'] == -1:
+#             if verbose:
+#                 print(f"Node {node} là lá → Prediction = {current['Prediction']}")
+#             return current['Prediction']
+
+#         # Xác định feature name
+#         feature_name = {0: 'timestamp', 1: 'arbitration_id', 2: 'data_field'}[current['Feature']]
+
+#         # Lấy string nhị phân của threshold và input
+#         threshold_bin  = format(current['Threshold'], '064b')
+#         input_value_bin = input_bin[feature_name]
+
+#         # In thông tin so sánh
+#         if verbose:
+#             print(f"\n-- Node {node} --")
+#             print(f" Feature       : {feature_name} (code = {current['Feature']:02b})")
+#             print(f" Input bits    : {input_value_bin}")
+#             print(f" Threshold bits: {threshold_bin}")
+#             cmp = "<=" if input_value_bin <= threshold_bin else " >"
+#             print(f" So sánh: {input_value_bin} {cmp} {threshold_bin}")
+
+#         # Chọn nhánh
+#         if input_value_bin <= threshold_bin:
+#             node = current['Left_Child']
+#             if verbose:
+#                 print(f" → Chọn Left_Child = {node}")
+#         else:
+#             node = current['Right_Child']
+#             if verbose:
+#                 print(f" → Chọn Right_Child = {node}")
+
 def predict_from_parsed_tree(tree_rows, input_data, verbose=False):
     node = 0
-    # Chuẩn bị chuỗi nhị phân đầu vào
+    # Giả sử input_data là các chuỗi nhị phân 64-bit đã được chuẩn bị sẵn
     input_bin = {
-        'timestamp':      format(int(float(input_data['timestamp'])), '064b'),
-        'arbitration_id': format(int(input_data['arbitration_id'], 16), '064b'),
-        'data_field':     format(int(input_data['data_field'], 16), '064b')
+        'timestamp':      input_data['timestamp'],
+        'arbitration_id': input_data['arbitration_id'],
+        'data_field':     input_data['data_field']
     }
 
     while True:
@@ -53,20 +105,15 @@ def predict_from_parsed_tree(tree_rows, input_data, verbose=False):
             print(f"❌ Node {node} không tồn tại.")
             return None
 
-        # Nếu là leaf node
         if current['Feature'] == -1:
             if verbose:
                 print(f"Node {node} là lá → Prediction = {current['Prediction']}")
             return current['Prediction']
 
-        # Xác định feature name
         feature_name = {0: 'timestamp', 1: 'arbitration_id', 2: 'data_field'}[current['Feature']]
-
-        # Lấy string nhị phân của threshold và input
-        threshold_bin  = format(current['Threshold'], '064b')
+        threshold_bin = format(current['Threshold'], '064b')
         input_value_bin = input_bin[feature_name]
 
-        # In thông tin so sánh
         if verbose:
             print(f"\n-- Node {node} --")
             print(f" Feature       : {feature_name} (code = {current['Feature']:02b})")
@@ -75,7 +122,6 @@ def predict_from_parsed_tree(tree_rows, input_data, verbose=False):
             cmp = "<=" if input_value_bin <= threshold_bin else " >"
             print(f" So sánh: {input_value_bin} {cmp} {threshold_bin}")
 
-        # Chọn nhánh
         if input_value_bin <= threshold_bin:
             node = current['Left_Child']
             if verbose:
@@ -84,6 +130,7 @@ def predict_from_parsed_tree(tree_rows, input_data, verbose=False):
             node = current['Right_Child']
             if verbose:
                 print(f" → Chọn Right_Child = {node}")
+
 
 def vote_predictions_mif(trees, input_data, verbose=False):
     predictions = []
@@ -98,21 +145,23 @@ def vote_predictions_mif(trees, input_data, verbose=False):
     return voted, counts
 
 if __name__ == "__main__":
-    trees = [f"src/LUT/tree_{i}_v.mif" for i in range(21)]
-    sample_input = {
- 'timestamp': 1672531251.000602, 'arbitration_id': '0AA', 'data_field': "0000000000000000",
+    trees = [f"LUT/tree_{i}_v.mif" for i in range(21)]
+    sample_input_1 = {
+ 'timestamp': '0000000000000000000000000000000001100011101100001100110111001011',
+   'arbitration_id': '0000000000000000000000000000000000000000000000000000001111101001',
+     'data_field': "0001001100111101000111001101110100010011000101000001100100001011",
     }
 
-    sample_input_1= {
-    'timestamp': 1672531286.901432,
-    'arbitration_id': '0C1',
-    'data_field': "0000000000000000"
+    sample_input= {
+    'timestamp':1672531403.465987,
+    'arbitration_id': '3E9',
+    'data_field': "133D1CDD1314190B"
     }
 
     sample_input_0 = {
     'timestamp': 1672531398.7673929, 'arbitration_id': '3E9', 'data_field': "1B4C05111B511C69",
     }
 
-    voted_pred, pred_counts = vote_predictions_mif(trees, sample_input_0, verbose=True)
+    voted_pred, pred_counts = vote_predictions_mif(trees, sample_input_1, verbose=True)
     print(f"\n🧾 Final Voted Prediction: {voted_pred} (0: Normal, 1: Attack)")
     print(f"Votes: {pred_counts}")

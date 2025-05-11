@@ -42,12 +42,12 @@ def convert_csv_to_mif(csv_file, mif_file):
                 prediction_bin = '00'
             
             # Ghép các trường lại thành một chuỗi nhị phân
-            data_bin = node_bin + feature_bin + threshold_bin + left_bin + right_bin + prediction_bin
+            data_bin = node_bin + feature_bin  + threshold_bin + left_bin  + right_bin  + prediction_bin
             
             # Ghi dữ liệu vào file MIF
             mif.write(f"{data_bin}\n")
         
-        mif.write("END;\n")
+      
 
 # Lặp qua các tree_id từ 0 đến 20 và chuyển đổi từng file CSV thành MIF
 for tree_id in range(21):
