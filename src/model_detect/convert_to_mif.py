@@ -21,11 +21,9 @@ def convert_csv_to_mif(csv_file, mif_file):
             # Xử lý Feature
             if feature == '-1':
                 feature_bin = '11'  # Nếu feature = -1 thì chuyển thành '11'
+                threshold_bin = '0' * 64  # Đặt threshold thành 64 bit 0
             else:
-                feature_bin = format(int(feature, 2), '02b')  # Các trường hợp khác vẫn chuyển nhị phân 2 bit
-            
-          
-            
+                feature_bin = format(int(feature, 2), '02b')  # Các trường hợp khác vẫn chuyển nhị phân 2 bi
                 # Nếu Feature không phải "01" hoặc "-1", chuyển Threshold thành nhị phân 64-bit của số nguyên
                 threshold_bin = format(int(float(threshold)), '064b')
             
@@ -42,8 +40,9 @@ def convert_csv_to_mif(csv_file, mif_file):
                 prediction_bin = '00'
             
             # Ghép các trường lại thành một chuỗi nhị phân
-            data_bin = node_bin + feature_bin  + threshold_bin + left_bin  + right_bin  + prediction_bin
+            # data_bin = node_bin+"|" + feature_bin+"|"  + threshold_bin+"|"  + left_bin +"|" + right_bin+"|"  + prediction_bin
             
+            data_bin = node_bin + feature_bin + threshold_bin + left_bin + right_bin + prediction_bin
             # Ghi dữ liệu vào file MIF
             mif.write(f"{data_bin}\n")
         
