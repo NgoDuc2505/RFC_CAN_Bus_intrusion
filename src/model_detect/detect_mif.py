@@ -40,12 +40,6 @@ def load_tree_from_mif(mif_path):
 
 def predict_from_parsed_tree(tree_rows, input_data, verbose=False):
     node = 0
-    # Chuẩn bị chuỗi nhị phân đầu vào
-    # input_bin = {
-    #     'timestamp':      format(int(float(input_data['timestamp'])), '064b'),
-    #     'arbitration_id': format(int(input_data['arbitration_id'], 16), '064b'),
-    #     'data_field':     format(int(input_data['data_field'], 16), '064b')
-    # }
     input_bin = {
         'timestamp':      input_data['timestamp'],
         'arbitration_id': input_data['arbitration_id'],
@@ -106,15 +100,15 @@ def vote_predictions_mif(trees, input_data, verbose=False):
 if __name__ == "__main__":
     trees = [f"LUT/tree_{i}_v.mif" for i in range(21)]
     sample_input_1 = {
- 'timestamp': '0000000000000000000000000000000001100011101100001100110100101010',
-   'arbitration_id': '0000000000000000000000000000000000000000000000000000001001011111',
-     'data_field': "0000000000000000110011111100000111001101001010101011010000010111",
+        'timestamp': '0000000000000000000000000000000001100011101100001100111100001000',
+        'arbitration_id': '0000000000000000000000000000000000000000000000000000000110000100',
+        'data_field': "0000000000000000000000000000001100000000000000000000000000000000",
     }
 
     sample_input= {
-    'timestamp':1672531403.465987,
-    'arbitration_id': '3E9',
-    'data_field': "133D1CDD1314190B"
+        'timestamp':1672531403.465987,
+        'arbitration_id': '3E9',
+        'data_field': "133D1CDD1314190B"
     }
 
     sample_input_0 = {
